@@ -7,5 +7,6 @@
 #include "TLorentzVector.h"
 
 int findHardScatterLepton(std::vector<GenParticle_p5>& partList, bool isPythia6 = false);
+TLorentzVector findDressedLepton(std::vector<GenParticle_p5>& partList, bool isPythia6, TLorentzVector Vlepton_vec, double radius);
 double LeptonIsolation(fastjet::PseudoJet& lepton, std::vector<fastjet::PseudoJet>& jetList, double Rmin, double Rmax);
 double LeptonMiniIsolation(GenParticle_p5& lepton, std::vector<GenParticle_p5>& partList);
