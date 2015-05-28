@@ -46,7 +46,7 @@ int main(int argc, char** argv){
   }
   
   // Jet definition
-  double jet_R = reader.GetInteger("jet", "R", 0.4);
+  double jet_R = reader.GetReal("jet", "R", 0.4);
   fastjet::JetDefinition jet_def(fastjet::antikt_algorithm, jet_R);
 
   // Jet selection

@@ -62,7 +62,7 @@ int main(int argc, char** argv){
   }
   
   // Fat jet definition
-  double fat_R = reader.GetInteger("fatjet", "R", 1.0);
+  double fat_R = reader.GetReal("fatjet", "R", 1.0);
   fastjet::JetDefinition fat_jet_def(fastjet::cambridge_algorithm, fat_R);
 
   // Fat jet selection
