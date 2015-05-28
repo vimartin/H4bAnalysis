@@ -285,7 +285,7 @@ int main(int argc, char** argv){
 	} else {
 	  charged_input_particles = pruned_jet.constituents();
 	}
-	//	cout << "RCLSA " << charged_input_particles.size() << endl;
+
 	fastjet::ClusterSequence sub_clust_seq(charged_input_particles, sub_jet_def);    
 	vector<fastjet::PseudoJet> sub_inclusive_jets = sorted_by_pt(sub_clust_seq.inclusive_jets(sub_jet_ptmin));
 
