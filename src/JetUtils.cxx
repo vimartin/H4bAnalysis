@@ -74,9 +74,9 @@ std::vector< std::vector<int> > findBHdecays(std::vector<GenParticle_p5>& partLi
     index++;
     if ((abs(part.m_pdgId) == 36) && part.m_status == 22) {
       if (prodVtx1 > 0)
-	prodVtx1 = part.m_endVtx;
+        prodVtx1 = part.m_endVtx;
       else
-	prodVtx2 = part.m_endVtx;
+        prodVtx2 = part.m_endVtx;
     }
     if ((abs(part.m_pdgId) == 36) && part.m_prodVtx == prodVtx1) {
       prodVtx1 = part.m_endVtx;

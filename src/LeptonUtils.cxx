@@ -1,3 +1,5 @@
+#include "TLorentzVector.h"
+
 #include "ExoticHiggs/LeptonUtils.h"
 
 #include <cmath>
@@ -7,7 +9,7 @@ using namespace std;
 
 int findHardScatterLepton(std::vector<GenParticle_p5>& partList, bool isPythia6)
 {
-  
+
   int index = -1;
   bool found = false;
   if (!isPythia6) {
@@ -15,21 +17,21 @@ int findHardScatterLepton(std::vector<GenParticle_p5>& partList, bool isPythia6)
     for (auto part : partList) {
       index++;
       if ((abs(part.m_pdgId) == 24 || abs(part.m_pdgId) == 23) && part.m_status == 22 && prodVtx > 0) {
-	prodVtx = part.m_endVtx;
+        prodVtx = part.m_endVtx;
       }
       if ((abs(part.m_pdgId) == 24 || abs(part.m_pdgId) == 23) && part.m_prodVtx == prodVtx) {
-	prodVtx = part.m_endVtx;
+        prodVtx = part.m_endVtx;
       }
       if (abs(part.m_pdgId) == 15 && part.m_prodVtx == prodVtx) {
-	prodVtx = part.m_endVtx;
+        prodVtx = part.m_endVtx;
       }
       if ((abs(part.m_pdgId) == 11 || abs(part.m_pdgId) == 13) && part.m_prodVtx == prodVtx) {
-	if (part.m_status == 1) {
-	  found = true;
-	  break;
-	} else {
-	  prodVtx = part.m_endVtx;
-	}
+        if (part.m_status == 1) {
+          found = true;
+          break;
+        } else {
+          prodVtx = part.m_endVtx;
+        }
       }
     }
   } else {
@@ -38,32 +40,59 @@ int findHardScatterLepton(std::vector<GenParticle_p5>& partList, bool isPythia6)
     for (auto part : partList) {
       index++;
       if ((abs(part.m_pdgId) == 24 || abs(part.m_pdgId) == 23) && part.m_status == 3 && prodVtx > 0) {
-	prodVtx = part.m_endVtx;
+        prodVtx = part.m_endVtx;
       }
       if ((abs(part.m_pdgId) == 24 || abs(part.m_pdgId) == 23) && part.m_prodVtx == prodVtx) {
-	prodVtx = part.m_endVtx;
+        prodVtx = part.m_endVtx;
       }
       if (abs(part.m_pdgId) == 15 && part.m_prodVtx == prodVtx) {
-	prodVtx = part.m_endVtx;
+        prodVtx = part.m_endVtx;
       }
       if ((abs(part.m_pdgId) == 11 || abs(part.m_pdgId) == 13) && part.m_prodVtx == prodVtx) {
-	if (part.m_status == 3) {
-	  status3_lep.SetXYZM(part.m_px,part.m_py,part.m_pz,part.m_m);
-	} else {
-	  prodVtx = part.m_endVtx;
-	}
+        if (part.m_status == 3) {
+          status3_lep.SetXYZM(part.m_px,part.m_py,part.m_pz,part.m_m);
+        } else {
+          prodVtx = part.m_endVtx;
+        }
       }
       if ((abs(part.m_pdgId) == 11 || abs(part.m_pdgId) == 13) && part.m_status == 1) {
-	TLorentzVector v1; v1.SetXYZM(part.m_px,part.m_py,part.m_pz,part.m_m);
-	if (status3_lep.DeltaR(v1) < 0.1) {
-	  found = true;
-	  break;
-	}
+        TLorentzVector v1; v1.SetXYZM(part.m_px,part.m_py,part.m_pz,part.m_m);
+        if (status3_lep.DeltaR(v1) < 0.1) {
+          found = true;
+          break;
+        }
       }      
     }
   }
   if (!found) return -1;
   return index;
+}
+
+TLorentzVector findDressedLepton(std::vector<GenParticle_p5>& partList, bool isPythia6, TLorentzVector Vlepton_vec, double radius)
+{
+  // Lepton TLorentzVector
+  TLorentzVector lepton = Vlepton_vec;
+
+  // Photons
+  TLorentzVector ph; 
+  std::vector<TLorentzVector> radiation;
+
+  for (auto part : partList) {
+    if (abs(part.m_pdgId) == 22 && part.m_status == 1) {
+        ph.SetXYZM(part.m_px,part.m_py,part.m_pz,part.m_m);
+        float dR = lepton.DeltaR(ph);
+        if (dR<radius){
+          radiation.push_back(ph);
+        }
+    }
+  }
+
+  // Dressed lepton
+  TLorentzVector dressed_lepton = lepton;
+  for (auto part : radiation){
+    dressed_lepton = dressed_lepton + part;
+  }
+  return dressed_lepton;
 }
 
 
@@ -102,7 +131,7 @@ double LeptonMiniIsolation(GenParticle_p5& lepton, std::vector<GenParticle_p5>& 
   }
   iso /= lep_vec.Pt();
   return iso;
-  
+
 }
-    
+
 
