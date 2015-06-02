@@ -4,11 +4,13 @@
 
 #include "generator/McEventCollection_p5.h"
 #include "generator/GenParticle_p5.h"
+#include "generator/GenEvent_p5.h"
 
 #include "inih/INIReader.h"
 
 #include "ExoticHiggs/LeptonUtils.h"
 #include "ExoticHiggs/JetUtils.h"
+#include "ExoticHiggs/PlotUtilities.h"
 
 #include "TTree.h"
 #include "TChain.h"
@@ -17,6 +19,7 @@
 #include "TLorentzVector.h"
 #include "TVector2.h"
 #include "TH1D.h"
+#include "TH1.h"
 #include "TH2D.h"
 #include "TF1.h"
 #include "TParticlePDG.h"
@@ -64,23 +67,10 @@ int main(int argc, char** argv){
   // files
   const char* dataFileName = reader.Get("io", "data_file_name", "UNKNOWN").c_str();
   const char* outputFileName = reader.Get("io", "result_file_name", "UNKNOWN").c_str();
-  double hypMass = reader.GetReal("io", "hyp_mass", 20.);
   bool isSignal = reader.GetBoolean("io", "isSignal", false);
   bool isPythia6 = reader.GetBoolean("io", "isPythia6", false);
 
-  // Histograms to do
-  TH1D* bparton_pt = new TH1D("bparton_pt", "bparton_pt", 100, 0., 150.);
-  TH1D* bbar_dR = new TH1D("bbar_dR", "bbar_dR", 100, 0., 5.);
-  TH2D* bbar_dR_vs_H_pT = new TH2D("bbar_dR_vs_H_pT", "bbar_dR_vs_H_pT", 100, 0., 5., 100, 0., 150.);
-  TH1D* njets = new TH1D("njets", "njets", 10, -0.5, 9.5);
-  TH1D* nbjets = new TH1D("nbjets", "nbjets", 10, -0.5, 9.5);
-  TH1D* lepton_pt = new TH1D("lepton_pt", "lepton_pt", 100, 0., 150.);
-  TH1D* leptonraw_pt = new TH1D("leptonraw_pt", "leptonraw_pt", 100, 0., 150.);
-  TH1D* lepton_miniiso = new TH1D("lepton_miniiso", "lepton_miniiso", 100, 0., 0.5);
-  TH1D* cutflow_h = new TH1D("cutflow", "cutflow", 9, 0., 9.);
-
-  // Gets the input and stores in fastjet
-  std::vector<fastjet::PseudoJet> input_particles;
+  // Read TTree and get the input
   TChain* CollectionTree = new TChain("CollectionTree");
   TFileCollection fc("dum","",dataFileName);
   CollectionTree->AddFileInfoList((TCollection*) fc.GetList());
@@ -95,39 +85,68 @@ int main(int argc, char** argv){
   Long64_t nentries = CollectionTree->GetEntries();
   cout << "Reading " << nentries << " events" << endl;
 
+  // Define maps for the histograms
+  std::map<std::string, TH1*> h_1d; 
+  std::map<std::string, TH2D*> h_2d;
 
-  double cutflow[] = {0.,0.,0.,0.,0.,0.,0.,0.,0.};
-  cutflow_h->GetXaxis()->SetBinLabel(1, "all");
-  cutflow_h->GetXaxis()->SetBinLabel(2, "1 lep");  
-  cutflow_h->GetXaxis()->SetBinLabel(3, "lep pt");
-  cutflow_h->GetXaxis()->SetBinLabel(4, "lep eta");
-  cutflow_h->GetXaxis()->SetBinLabel(5, "lep iso");
-  cutflow_h->GetXaxis()->SetBinLabel(6, "4 jets");
-  cutflow_h->GetXaxis()->SetBinLabel(7, "4 bjets");
-  cutflow_h->GetXaxis()->SetBinLabel(8, "more cuts");
-  cutflow_h->GetXaxis()->SetBinLabel(9, "mass requirement");
+  // Define cutflow bin titles
+  std::vector<std::string> cutflow_bin_title;
+  cutflow_bin_title.push_back("all");
+  cutflow_bin_title.push_back("1 lep");
+  cutflow_bin_title.push_back("lep pt");
+  cutflow_bin_title.push_back("lep eta");
+  cutflow_bin_title.push_back("lep iso");
+  cutflow_bin_title.push_back("4 jets");
+  cutflow_bin_title.push_back("4 bjets");
 
+  // Define particle vectors
+  std::vector<fastjet::PseudoJet> input_particles;
+  std::vector<particleJet>        selected_jets;
+  std::vector<particleJet>        selected_bjets;
+  std::vector<particleJet>        selected_ljets;
+  std::vector<particleLepton>     pre_selected_lepton;
+  std::vector<particleLepton>     selected_lepton;
+
+  // Cross section and weights
+  double mc_weight = 1.;
+  double xsec = reader.GetReal("eventInfo", "crossSection", 1.);
+
+  // Loop on events
   for (Long64_t ievt=0; ievt<nentries; ievt++) {
 
     // all of it
-    cutflow[0]++;
+    plot1D_cutflow("cutflow", 0, h_1d, "Cut flow", cutflow_bin_title);
 
     if (ievt % 500 == 0) cout << "Event  " << ievt << endl;
 
     CollectionTree->GetEntry(ievt);
-    TLorentzVector partvec;
+
+    // Extract weight
+    for (auto ev : event->m_genEvents){
+      ev.m_weights.at(0)>0. ? mc_weight=1. : mc_weight=-1.;
+      break;
+    }
+
+    // Clear particle vectors
     input_particles.clear();
+    selected_jets.clear();
+    selected_bjets.clear();
+    selected_ljets.clear();
+    pre_selected_lepton.clear();
+    selected_lepton.clear();
+
+    // Find the index of the b-quarks from the A decay
+    std::vector<std::vector<int>> theBHdecays = findBHdecays(event->m_genParticles);
+
+    // TLorentzVector for the particle
+    TLorentzVector partvec;
+
+    // Find the index of the hard scatter leptons
+    std::vector<int> theHL = findHardScatterLeptons(event->m_genParticles, isPythia6);
+    particleLepton lepton;
+
+    // Loop over all particles in the event
     int index = -1;
-
-    // Again kind of an overkill, but ok.
-    vector<vector<int>> theBHdecays = findBHdecays(event->m_genParticles);
-
-    int theHL = findHardScatterLepton(event->m_genParticles, isPythia6);
-    fastjet::PseudoJet Vlepton_jet;
-    TLorentzVector Vlepton_vec;
-    TLorentzVector VdressedLepton_vec;
-    GenParticle_p5 Vlepton_part;
-
     for (auto part : event->m_genParticles) {
       index++;
       partvec.SetXYZM(part.m_px, part.m_py, part.m_pz, part.m_m);
@@ -168,12 +187,13 @@ int main(int argc, char** argv){
       }
 
       // Get TLorentz vector of the lepton
-      if (index == theHL) {
-        // A bit of an overkill, but simpler.
-        Vlepton_jet = fastjet::PseudoJet(partvec.Px(),partvec.Py(),partvec.Pz(),partvec.E());
-        Vlepton_vec = partvec;
-        VdressedLepton_vec = findDressedLepton(event->m_genParticles, isPythia6, Vlepton_vec, 0.1);
-        Vlepton_part = part;
+      if (std::find(theHL.begin(), theHL.end(), index)!=theHL.end()) {
+        lepton.setLeptonRaw(partvec);
+        lepton.setGenParticle(part);
+        lepton.setIndexLepton(index);
+        lepton.dressLepton(event->m_genParticles, isPythia6, 0.1);
+
+        pre_selected_lepton.push_back(lepton);
         continue;
       }
 
@@ -185,22 +205,45 @@ int main(int argc, char** argv){
       if (abs(part.m_pdgId) == 14) continue;
       if (abs(part.m_pdgId) == 16) continue;
 
+      // Not dressing of the electron
+      std::vector<int> dressing_index = lepton.getDressingIndex();
+      if (std::find(dressing_index.begin(), dressing_index.end(), index)!=dressing_index.end()) continue;
 
-
+      // The rest of particles, consider them to cluster
       input_particles.push_back(fastjet::PseudoJet(partvec.Px(),partvec.Py(),partvec.Pz(),partvec.E()));
       input_particles.back().set_user_index(index);
+
+    } // End particle loop
+
+
+    // Truth level, before selection
+    if (isSignal) {
+      TLorentzVector b1, b2, b3, b4;
+      b1.SetXYZM(event->m_genParticles[theBHdecays[0][0]].m_px, event->m_genParticles[theBHdecays[0][0]].m_py, event->m_genParticles[theBHdecays[0][0]].m_pz, event->m_genParticles[theBHdecays[0][0]].m_m);
+      b2.SetXYZM(event->m_genParticles[theBHdecays[0][1]].m_px, event->m_genParticles[theBHdecays[0][1]].m_py, event->m_genParticles[theBHdecays[0][1]].m_pz, event->m_genParticles[theBHdecays[0][1]].m_m);
+      b3.SetXYZM(event->m_genParticles[theBHdecays[1][0]].m_px, event->m_genParticles[theBHdecays[1][0]].m_py, event->m_genParticles[theBHdecays[1][0]].m_pz, event->m_genParticles[theBHdecays[1][0]].m_m);
+      b4.SetXYZM(event->m_genParticles[theBHdecays[1][1]].m_px, event->m_genParticles[theBHdecays[1][1]].m_py, event->m_genParticles[theBHdecays[1][1]].m_pz, event->m_genParticles[theBHdecays[1][1]].m_m);
+
+      plot1D("h_bparton_pt", b1.Pt()/1000., 1., h_1d, "b-parton pT", 100, 0, 150);
+      plot1D("h_bparton_pt", b2.Pt()/1000., 1., h_1d, "b-parton pT", 100, 0, 150);
+      plot1D("h_bparton_pt", b3.Pt()/1000., 1., h_1d, "b-parton pT", 100, 0, 150);
+      plot1D("h_bparton_pt", b4.Pt()/1000., 1., h_1d, "b-parton pT", 100, 0, 150);
+
+      plot1D("h_bbar_dR", b1.DeltaR(b2), 1., h_1d, "b-bbar dR", 100, 0, 5);
+      plot1D("h_bbar_dR", b3.DeltaR(b4), 1., h_1d, "b-bbar dR", 100, 0, 5);
+
+      plot2D("h_bbar_dR_vs_H_pT", b1.DeltaR(b2), (b1+b2+b3+b4).Pt()/1000., 1., h_2d, "bbar dR vs Higgs pT", 100, 0., 5., 100, 0., 150.);
+      plot2D("h_bbar_dR_vs_H_pT", b3.DeltaR(b4), (b1+b2+b3+b4).Pt()/1000., 1., h_2d, "bbar dR vs Higgs pT", 100, 0., 5., 100, 0., 150.);
     }
 
     // cluster the jets
     fastjet::ClusterSequence clust_seq(input_particles, jet_def);    
     vector<fastjet::PseudoJet> inclusive_jets = sorted_by_pt(clust_seq.inclusive_jets(jet_ptmin));
 
-    vector<particleJet> selected_jets;
+    // Jet reconstruction
     for (auto jet : inclusive_jets) {
-
       TLorentzVector jetvec(jet.px(), jet.py(), jet.pz(), jet.e());
       if (fabs(jetvec.Eta()) > jet_etamax) continue;
-
       particleJet partJet;
       partJet.jet = jetvec;
       partJet.isBjet = isBjet(jet);
@@ -217,115 +260,81 @@ int main(int argc, char** argv){
           partJet.parton.push_back(&(event->m_genParticles[theBHdecays[1][1]]));
         }
       }
-
       selected_jets.push_back(partJet);
-
     }
 
-    vector<TLorentzVector> selected_rawlepton;
-    if (theHL > -1) {
-      if (Vlepton_vec.Pt() > lep_ptmin) {
-        if (fabs(Vlepton_vec.Eta()) < lep_etamax) {
-          if (LeptonMiniIsolation(Vlepton_part, event->m_genParticles) > lep_isomax) {
-            selected_rawlepton.push_back(Vlepton_vec);
+    // Lepton reconstruction
+    for (auto lepton : pre_selected_lepton){
+      // Compute isolations
+      lepton.compute_miniIsolation(event->m_genParticles);
+      lepton.compute_isolation(selected_jets, 0.01, 0.2);
+
+      plot1D_cutflow("cutflow", 1, h_1d, "Cut flow", cutflow_bin_title);
+      TLorentzVector lepton_tlv = lepton.getLeptonDressed();
+      GenParticle_p5 lepton_part = lepton.getLeptonGenPart();
+      if (lepton_tlv.Pt() > lep_ptmin) {
+        plot1D_cutflow("cutflow", 2, h_1d, "Cut flow", cutflow_bin_title);
+        if (fabs(lepton_tlv.Eta()) < lep_etamax) {
+          plot1D_cutflow("cutflow", 3, h_1d, "Cut flow", cutflow_bin_title);
+          if (lepton.getMiniIsolation() < lep_isomax) {
+            selected_lepton.push_back(lepton);
           }
         }
       }
     }
 
-    vector<TLorentzVector> selected_lepton;
-    if (theHL > -1) {
-      cutflow[1]++;
-      if (VdressedLepton_vec.Pt() > lep_ptmin) {
-        cutflow[2]++;
-        if (fabs(VdressedLepton_vec.Eta()) < lep_etamax) {
-          cutflow[3]++;
-          if (LeptonMiniIsolation(Vlepton_part, event->m_genParticles) > lep_isomax) {
-            cutflow[4]++;
-            selected_lepton.push_back(VdressedLepton_vec);
-          }
-        }
+    // Define the b-jets
+    for (auto jet : selected_jets) {
+      if (jet.isBjet) {
+        selected_bjets.push_back(jet);
       }
+    } 
+
+    // P L O T S
+    std::string pass;
+    //--- Pass lepton requirement
+    selected_lepton.size()>0 ? pass="passLepton" : pass="failLepton";
+    if (pass.find(std::string("passLepton")) != std::string::npos){
+      plot1D_cutflow("cutflow", 4, h_1d, "Cut flow", cutflow_bin_title);
     }
+    doAllPlots(0, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec);
 
-    // Truth level, before selection
-    if (isSignal) {
-      TLorentzVector b1, b2, b3, b4;
-      b1.SetXYZM(event->m_genParticles[theBHdecays[0][0]].m_px, event->m_genParticles[theBHdecays[0][0]].m_py, event->m_genParticles[theBHdecays[0][0]].m_pz, event->m_genParticles[theBHdecays[0][0]].m_m);
-      b2.SetXYZM(event->m_genParticles[theBHdecays[0][1]].m_px, event->m_genParticles[theBHdecays[0][1]].m_py, event->m_genParticles[theBHdecays[0][1]].m_pz, event->m_genParticles[theBHdecays[0][1]].m_m);
-      b3.SetXYZM(event->m_genParticles[theBHdecays[1][0]].m_px, event->m_genParticles[theBHdecays[1][0]].m_py, event->m_genParticles[theBHdecays[1][0]].m_pz, event->m_genParticles[theBHdecays[1][0]].m_m);
-      b4.SetXYZM(event->m_genParticles[theBHdecays[1][1]].m_px, event->m_genParticles[theBHdecays[1][1]].m_py, event->m_genParticles[theBHdecays[1][1]].m_pz, event->m_genParticles[theBHdecays[1][1]].m_m);
-
-      bparton_pt->Fill(b1.Pt()/1000.);
-      bparton_pt->Fill(b2.Pt()/1000.);
-      bparton_pt->Fill(b3.Pt()/1000.);
-      bparton_pt->Fill(b4.Pt()/1000.);
-
-      bbar_dR->Fill(b1.DeltaR(b2));
-      bbar_dR->Fill(b3.DeltaR(b4));
-
-      bbar_dR_vs_H_pT->Fill(b1.DeltaR(b2), (b1+b2+b3+b4).Pt()/1000.);
-      bbar_dR_vs_H_pT->Fill(b3.DeltaR(b4), (b1+b2+b3+b4).Pt()/1000.);
+    //--- Pass lepton + jets requirements
+    selected_jets.size()>=4  ? pass=Form("%s-passJets", pass.c_str()) : pass=Form("%s-failJets", pass.c_str());
+    if (pass.find(std::string("passLepton-passJets")) != std::string::npos){
+      plot1D_cutflow("cutflow", 5, h_1d, "Cut flow", cutflow_bin_title);
     }
+    doAllPlots(0, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec);
 
-    if (theHL > -1) {
-      lepton_pt->Fill(VdressedLepton_vec.Pt()/1000.);
-      leptonraw_pt->Fill(Vlepton_vec.Pt()/1000.);
-      lepton_miniiso->Fill(LeptonMiniIsolation(Vlepton_part, event->m_genParticles));
+    //--- Pass lepton + jets + b-jets requirements
+    selected_bjets.size()>=4  ? pass=Form("%s-passBJets", pass.c_str()) : pass=Form("%s-failBJets", pass.c_str());
+    if (pass.find(std::string("passLepton-passJets-passBJets")) != std::string::npos){
+      plot1D_cutflow("cutflow", 6, h_1d, "Cut flow", cutflow_bin_title);
     }
+    doAllPlots(0, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec);
 
-    // Now do lepton selection
-    if (selected_lepton.size() > 0) {
-      njets->Fill(selected_jets.size());
+  } // end loop entries
 
-      if (selected_jets.size() >= 4) cutflow[5]++;
 
-      int ijet = -1;
-
-      int nb = 0;
-      for (auto jet : selected_jets) {
-        ijet++;
-        if (jet.isBjet) nb++;
-      }
-      nbjets->Fill(nb);
-
-      if (nb>=4) cutflow[6]++;
-
-    }         
-
-  }
-
-  for (int ibin=1; ibin<=9; ibin++) cutflow_h->SetBinContent(ibin,cutflow[ibin-1]);
 
   cout << "---- REPORT ----" << endl;
-  cout << "Acceptance: " << endl << "   " << 100*cutflow[6]/cutflow[0] << "%" << endl;
+  cout << "Acceptance: " << endl << "   " << 100*h_1d["cutflow"]->GetBinContent(7)/h_1d["cutflow"]->GetBinContent(1) << "%" << endl;
 
-  TFile* resultFile = TFile::Open(outputFileName, "RECREATE");
+  TFile* resultFile = TFile::Open(Form("resolved-%s", outputFileName), "RECREATE");
 
-  bparton_pt->Write();
-  bbar_dR->Write();
-  bbar_dR_vs_H_pT->Write();
-  njets->Write();
-  nbjets->Write();
-  lepton_pt->Write();
-  leptonraw_pt->Write();
-  lepton_miniiso->Write();
-  cutflow_h->Write();
-
-  bparton_pt->Delete();
-  bbar_dR->Delete();
-  bbar_dR_vs_H_pT->Delete();
-  njets->Delete();
-  nbjets->Delete();
-  lepton_pt->Delete();
-  leptonraw_pt->Delete();
-  lepton_miniiso->Delete();
-  cutflow_h->Delete();
+  // Writing and deleting all histos
+  std::map<std::string, TH1*>::iterator it1d;
+  for(it1d=h_1d.begin(); it1d!=h_1d.end(); it1d++) {
+    it1d->second->Write(); 
+    delete it1d->second;
+  }
+  std::map<std::string, TH2D*>::iterator it2d;
+  for(it2d=h_2d.begin(); it2d!=h_2d.end(); it2d++) {
+    it2d->second->Write(); 
+    delete it2d->second;
+  }
 
   resultFile->Close();
   return 0;
 
 }
-
-
-
