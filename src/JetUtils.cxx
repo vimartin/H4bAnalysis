@@ -95,7 +95,18 @@ std::vector< std::vector<int> > findBHdecays(std::vector<GenParticle_p5>& partLi
   retval.push_back(vec2);
   return retval;
 }    
+
+double findMinDeltaR(std::vector<particleJet>){
+  double minDR = 1000.;
+
+  return minDR;
+}
   
+double findRecoHmass(std::vector<particleJet>){
+  double recoHmass = -9999;
+
+  return recoHmass;
+}
 
 
  ostream& operator<<(std::ostream & os, const fastjet::PseudoJet& jet)
