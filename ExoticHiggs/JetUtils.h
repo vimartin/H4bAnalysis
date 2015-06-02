@@ -8,6 +8,9 @@
 
 #include "TLorentzVector.h"
 
+#ifndef JETUTILS_H
+#define JETUTILS_H
+
 std::vector<int> findPartonHadrons(int parton, std::vector<GenParticle_p5>& partList);
 std::vector< std::vector<int> > findBHdecays(std::vector<GenParticle_p5>& partList);
 bool isBhadron(int pdgId);
@@ -32,14 +35,16 @@ class particleJet {
   std::vector<int> subjets_btag;
   
   std::vector<GenParticle_p5*> parton;
-  
 };
 
 // bool isBJet(std::vector<GenParticle_p5>& partList, fastjet::PseudoJet& jet);
 // bool isBHdecayJet(int BHdecayidx, std::vector<GenParticle_p5>& partList, fastjet::PseudoJet& jet);
 
+double findMinDeltaR(std::vector<particleJet>);
+double findRecoHmass(std::vector<particleJet>);
+
 std::ostream& operator<<(std::ostream& os, const particleJet jet);
 std::ostream& operator<<(std::ostream& os, const GenParticle_p5 parton);
 std::ostream& operator<<(std::ostream& ostr, const fastjet::PseudoJet& jet);
 
-
+#endif /*JETUTILS_H*/
