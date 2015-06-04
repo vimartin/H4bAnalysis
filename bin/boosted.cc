@@ -94,8 +94,8 @@ int main(int argc, char** argv){
   bool use_only_charged = reader.GetBoolean("subjet", "use_only_charged", false);
 
   // files
-  const char* dataFileName = reader.Get("io", "data_file_name", "UNKNOWN").c_str();
-  const char* outputFileName = reader.Get("io", "result_file_name", "UNKNOWN").c_str();
+  std::string dataFileName = reader.Get("io", "data_file_name", "UNKNOWN");
+  std::string outputFileName = reader.Get("io", "result_file_name", "UNKNOWN");
   double hypMass = reader.GetReal("io", "hyp_mass", 20.);
   bool isSignal = reader.GetBoolean("io", "isSignal", false);
   bool isPythia6 = reader.GetBoolean("io", "isPythia6", false);
@@ -104,7 +104,7 @@ int main(int argc, char** argv){
 
   // Gets the input and stores in fastjet
   TChain* CollectionTree = new TChain("CollectionTree");
-  TFileCollection fc("dum","",dataFileName);
+  TFileCollection fc("dum","",Form("JOs/inputList/%s", dataFileName.c_str()));
   CollectionTree->AddFileInfoList((TCollection*) fc.GetList());
   //  TBranch* branch = CollectionTree->GetBranch("McEventCollection_p5_GEN_EVENT");
   McEventCollection_p5* event = 0;
@@ -454,7 +454,7 @@ int main(int argc, char** argv){
 //    cout << "   btagged MD subjet mass: " << 100.*((TF1*) bsubjet_mass_mdpieces->GetListOfFunctions()->At(0))->GetParameter(2)/hypMass << "%" << endl;
 //  }
   
-  TFile* resultFile = TFile::Open(Form("boosted-%s", outputFileName), "RECREATE");
+  TFile* resultFile = TFile::Open(Form("results/%s", outputFileName.c_str()), "RECREATE");
 
   // Writing and deleting all histos
   std::map<std::string, TH1*>::iterator it1d;
