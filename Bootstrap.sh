@@ -5,11 +5,12 @@
 
 # compile fastjet
 # note $(WORKDIR) is the current working area
+export WORKDIR=$PWD
+
 curl -O http://fastjet.fr/repo/fastjet-3.1.2.tar.gz
 tar -xvzf fastjet-3.1.2.tar.gz
 rm -rf fastjet/*
 cd fastjet-3.1.2
-export WORKDIR=$PWD
 ./configure --prefix=${WORKDIR}/fastjet/
 make install
 
@@ -17,7 +18,7 @@ make install
 cd $WORKDIR
 mkdir results/
 mkdir data/
-scp -r caminal@lxplus.cern.ch:/afs/cern.ch/work/c/caminal/public/ToVerena/data/ data/.
+scp caminal@lxplus.cern.ch:/afs/cern.ch/work/c/caminal/public/ToVerena/data/* data/.
 
 make clean
 make all
