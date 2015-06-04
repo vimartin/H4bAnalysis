@@ -4,14 +4,10 @@
 	git clone https://github.com/vimartin/H4bAnalysis.git
 	cd H4bAnalysis
 
-	--- compile fastjet ---
-	--- note $(WORKDIR) is the current working area ---
-	rm -rf fastjet/*
-	cd fastjet-3.1.2
-	./configure --prefix=$(WORKDIR)/fastjet/
-	make install
+	--- prepare the code and compile ---
+	source Bootstrap.sh
 
 	--- compile and run analysis code ---
 	make clean
 	make all
-	./analysis.exe analysis.cfg
+	./boosted.exe JOs/boosted_PowhegPythia8EvtGen_WplusenuH_H125_a60a60_bbbb.cfg

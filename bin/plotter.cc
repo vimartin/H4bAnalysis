@@ -32,13 +32,11 @@ int main(int argc, char** argv){
     return 1;
   }
 
-  // To plot
+  // Allow showing TCanvas
   TApplication theApp("tapp", &argc, argv);
-
   
   // Get luminosity
   double luminosity = reader.GetReal("General", "luminosity", 1.0);
-  cout<<luminosity<<endl;
 
   // Get distribution
   std::string distribution = reader.Get("General", "distribution", "UNKOWN");
@@ -54,7 +52,6 @@ int main(int argc, char** argv){
   // Get Background properties
   std::vector<std::string> bkgName = convertStringToVector(reader.Get("Backgrounds", "processes", "UNKNOWN"));
   for (auto bkg : bkgName){
-    cout<<"Before"<<endl;
     sample_map[bkg] = process(); 
 
     address_map[bkg] =   Form("results/%s", reader.Get(bkg, "address", "UNKNOWN").c_str()); 
@@ -83,11 +80,15 @@ int main(int argc, char** argv){
     sample_map[sig].setLuminosity(luminosity);
     sample_map[sig].setIsSignal(isSignal_map[sig]);
   }
-
-  TH1F *mysignal = (TH1F*) sample_map["WplusenuH_H125_a20a20_bbbb"].getHistogram()->Clone();
+//--- Check this part! Pointers??
+  TH1F *mysignal = new TH1F(*sample_map["WplusenuH_H125_a20a20_bbbb"].getHistogram());
+  cout<<typeid(sample_map["WplusenuH_H125_a20a20_bbbb"].getHistogram()).name()<<endl;
+  cout<<mysignal->Integral()<<endl;
   TCanvas *c1 = new TCanvas();
   c1->cd();
-//  mysignal->Draw();
-  theApp.Run();
+  mysignal->Draw();
 
+
+  theApp.Run();
+  return 0;
 }
