@@ -17,7 +17,7 @@ make install
 cd $WORKDIR
 mkdir results/
 mkdir data/
-scp -r caminal@lxplus.cern.ch:/afs/cern.ch/work/c/caminal/public/ToVerena/ data/.
+scp -r caminal@lxplus.cern.ch:/afs/cern.ch/work/c/caminal/public/ToVerena/data/ data/.
 
 make clean
 make all
