@@ -65,14 +65,14 @@ int main(int argc, char** argv){
   double ghost_factor = reader.GetReal("btagging", "ghost_factor", 1.e-21);
 
   // files
-  const char* dataFileName = reader.Get("io", "data_file_name", "UNKNOWN").c_str();
-  const char* outputFileName = reader.Get("io", "result_file_name", "UNKNOWN").c_str();
+  std::string dataFileName = reader.Get("io", "data_file_name", "UNKNOWN");
+  std::string outputFileName = reader.Get("io", "result_file_name", "UNKNOWN");
   bool isSignal = reader.GetBoolean("io", "isSignal", false);
   bool isPythia6 = reader.GetBoolean("io", "isPythia6", false);
 
   // Read TTree and get the input
   TChain* CollectionTree = new TChain("CollectionTree");
-  TFileCollection fc("dum","",dataFileName);
+  TFileCollection fc("dum","",Form("JOs/inputList/%s", dataFileName.c_str()));
   CollectionTree->AddFileInfoList((TCollection*) fc.GetList());
   //  TBranch* branch = CollectionTree->GetBranch("McEventCollection_p5_GEN_EVENT");
   McEventCollection_p5* event = 0;
@@ -229,6 +229,11 @@ int main(int argc, char** argv){
       plot1D("h_bparton_pt", b3.Pt()/1000., 1., h_1d, "b-parton pT", 100, 0, 150);
       plot1D("h_bparton_pt", b4.Pt()/1000., 1., h_1d, "b-parton pT", 100, 0, 150);
 
+      plot1D("h_bparton_eta", b1.Eta(), 1., h_1d, "b-parton eta", 100, -5, 5);
+      plot1D("h_bparton_eta", b2.Eta(), 1., h_1d, "b-parton eta", 100, -5, 5);
+      plot1D("h_bparton_eta", b3.Eta(), 1., h_1d, "b-parton eta", 100, -5, 5);
+      plot1D("h_bparton_eta", b4.Eta(), 1., h_1d, "b-parton eta", 100, -5, 5);
+
       plot1D("h_bbar_dR", b1.DeltaR(b2), 1., h_1d, "b-bbar dR", 100, 0, 5);
       plot1D("h_bbar_dR", b3.DeltaR(b4), 1., h_1d, "b-bbar dR", 100, 0, 5);
 
@@ -239,6 +244,28 @@ int main(int argc, char** argv){
     // cluster the jets
     fastjet::ClusterSequence clust_seq(input_particles, jet_def);    
     vector<fastjet::PseudoJet> inclusive_jets = sorted_by_pt(clust_seq.inclusive_jets(jet_ptmin));
+
+    // Check pt and eta effect in Njets
+    for (int j=0; j<4; j++){
+      float _pt = (5+j*5)*1000;
+      fastjet::ClusterSequence clust_seq_test(input_particles, jet_def);    
+      vector<fastjet::PseudoJet> inclusive_jets_test = sorted_by_pt(clust_seq_test.inclusive_jets(_pt));
+      for (int i=0; i<25; i++){
+        float _eta = i*0.2;
+        int _njets=0;
+        int _nbjets=0;
+        for (auto jet : inclusive_jets_test) {
+          TLorentzVector jetvec(jet.px(), jet.py(), jet.pz(), jet.e());
+          if (fabs(jetvec.Eta())>_eta) continue;
+          _njets++;
+          if (!isBjet(jet)) continue;
+          _nbjets++;
+        }
+        plot1D(Form("h_njets_ptmin%.1f_abseta%.1f",_pt, _eta), _njets, 1., h_1d, Form("Njets with ptmin<%.1f and |eta|<%.1f", _pt,  _eta), 10, 0., 10.);
+        plot1D(Form("h_nbjets_ptmin%.1f_abseta%.1f",_pt, _eta), _nbjets, 1., h_1d, Form("Nbjets with ptmin<%.1f and |eta|<%.1f", _pt,  _eta), 10, 0., 10.);
+      }
+      inclusive_jets_test.clear();
+    }
 
     // Jet reconstruction
     for (auto jet : inclusive_jets) {
@@ -320,7 +347,7 @@ int main(int argc, char** argv){
   cout << "---- REPORT ----" << endl;
   cout << "Acceptance: " << endl << "   " << 100*h_1d["cutflow"]->GetBinContent(7)/h_1d["cutflow"]->GetBinContent(1) << "%" << endl;
 
-  TFile* resultFile = TFile::Open(Form("resolved-%s", outputFileName), "RECREATE");
+  TFile* resultFile = TFile::Open(Form("results/%s", outputFileName.c_str()), "RECREATE");
 
   // Writing and deleting all histos
   std::map<std::string, TH1*>::iterator it1d;
