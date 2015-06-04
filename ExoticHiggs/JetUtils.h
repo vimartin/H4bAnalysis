@@ -16,6 +16,7 @@ std::vector< std::vector<int> > findBHdecays(std::vector<GenParticle_p5>& partLi
 bool isBhadron(int pdgId);
 bool isBjet(const fastjet::PseudoJet& jet);
 bool isBpartonJet(const fastjet::PseudoJet& jet, int parton);
+bool isJetMatchedToB(fastjet::PseudoJet jet, std::vector<GenParticle_p5>& partList);
 
 class particleJet {
 
@@ -41,7 +42,8 @@ class particleJet {
 // bool isBHdecayJet(int BHdecayidx, std::vector<GenParticle_p5>& partList, fastjet::PseudoJet& jet);
 
 double findMinDeltaR(std::vector<particleJet>);
-double findRecoHmass(std::vector<particleJet>);
+double findResolvedRecoHmass(std::vector<particleJet>);
+double findBoostedRecoHmass(std::vector<particleJet>);
 
 std::ostream& operator<<(std::ostream& os, const particleJet jet);
 std::ostream& operator<<(std::ostream& os, const GenParticle_p5 parton);

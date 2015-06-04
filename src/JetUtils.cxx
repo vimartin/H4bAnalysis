@@ -41,6 +41,22 @@ bool isBpartonJet(const fastjet::PseudoJet& jet, int parton)
   
 }
 
+bool isJetMatchedToB(fastjet::PseudoJet jet, std::vector<GenParticle_p5>& partList)
+{
+  TLorentzVector jet_tlv;
+  jet_tlv.SetXYZM(jet.px(), jet.py(), jet.pz(), jet.m());
+  for (auto part : partList){
+    if (!(part.m_status==71)) continue; // According to pythia, "copied partons to collect into contiguous colour singlet"
+    TLorentzVector part_tlv;
+    part_tlv.SetXYZM(part.m_px, part.m_py, part.m_pz, part.m_m);
+    if (part_tlv.Pt()<1000) continue;
+    if (fabs(part.m_pdgId)==5 && jet_tlv.DeltaR(part_tlv)<0.1){
+      return true;
+    }
+  }
+  return false;
+}
+
 std::vector<int> findPartonHadrons(int parton, std::vector<GenParticle_p5>& partList)
 {
 
@@ -102,9 +118,27 @@ double findMinDeltaR(std::vector<particleJet>){
   return minDR;
 }
   
-double findRecoHmass(std::vector<particleJet>){
+double findResolvedRecoHmass(std::vector<particleJet> selected_bjets){
   double recoHmass = -9999;
+  TLorentzVector H_tlv;
+  if (selected_bjets.size()==4){
+    for (auto bjet : selected_bjets){
+     H_tlv += bjet.jet; 
+    }
+  }
+  recoHmass = H_tlv.M()/1000.;
+  return recoHmass;
+}
 
+double findBoostedRecoHmass(std::vector<particleJet> selected_jets){
+  double recoHmass = -9999;
+  TLorentzVector H_tlv;
+  if (selected_jets.size()>1){
+    for (auto jet : selected_jets){
+      H_tlv += TLorentzVector(jet.pruned_pseudoJet.px(), jet.pruned_pseudoJet.py(), jet.pruned_pseudoJet.pz(), jet.pruned_pseudoJet.e());
+    }
+  }
+  recoHmass = H_tlv.M()/1000.;
   return recoHmass;
 }
 

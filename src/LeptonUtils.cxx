@@ -135,53 +135,56 @@ std::vector<int> findHardScatterLeptons(std::vector<GenParticle_p5>& partList, b
   std::vector<int> index_vec;
 
   if (!isPythia6) {
-    int prodVtx = 1;
+    std::vector<int> prodVtx;
     for (auto part : partList) {
       index++;
-      if ((abs(part.m_pdgId) == 24 || abs(part.m_pdgId) == 23) && part.m_status == 22 && prodVtx > 0) {
-        prodVtx = part.m_endVtx;
+      if ((abs(part.m_pdgId) == 24 || abs(part.m_pdgId) == 23) && part.m_status == 22) {
+        prodVtx.push_back(part.m_endVtx);
       }
-      if ((abs(part.m_pdgId) == 24 || abs(part.m_pdgId) == 23) && part.m_prodVtx == prodVtx) {
-        prodVtx = part.m_endVtx;
+      if ((abs(part.m_pdgId) == 24 || abs(part.m_pdgId) == 23) && find(prodVtx.begin(), prodVtx.end(), part.m_prodVtx) != prodVtx.end()) {
+        std::replace(prodVtx.begin(), prodVtx.end(), part.m_prodVtx, part.m_endVtx);
       }
-      if (abs(part.m_pdgId) == 15 && part.m_prodVtx == prodVtx) {
-        prodVtx = part.m_endVtx;
+      if (abs(part.m_pdgId) == 15 && find(prodVtx.begin(), prodVtx.end(), part.m_prodVtx) != prodVtx.end()) {
+        std::replace(prodVtx.begin(), prodVtx.end(), part.m_prodVtx, part.m_endVtx);
       }
-      if ((abs(part.m_pdgId) == 11 || abs(part.m_pdgId) == 13) && part.m_prodVtx == prodVtx) {
+      if ((abs(part.m_pdgId) == 11 || abs(part.m_pdgId) == 13) && find(prodVtx.begin(), prodVtx.end(), part.m_prodVtx) != prodVtx.end()) {
         if (part.m_status == 1) {
           index_vec.push_back(index);
         } else {
-          prodVtx = part.m_endVtx;
+          std::replace(prodVtx.begin(), prodVtx.end(), part.m_prodVtx, part.m_endVtx);
         }
       }
     }
-  } else {
-    int prodVtx = 1;
-    TLorentzVector status3_lep;
+  } 
+  else{ // Pythia 6
+    std::vector<int> prodVtx;
+    std::vector<TLorentzVector> status3_lep;
     for (auto part : partList) {
       index++;
-      if ((abs(part.m_pdgId) == 24 || abs(part.m_pdgId) == 23) && part.m_status == 3 && prodVtx > 0) {
-        prodVtx = part.m_endVtx;
+      if ((abs(part.m_pdgId) == 24 || abs(part.m_pdgId) == 23) && part.m_status == 3) { // Find all W/Z (they come first)
+        prodVtx.push_back(part.m_endVtx);
       }
-      if ((abs(part.m_pdgId) == 24 || abs(part.m_pdgId) == 23) && part.m_prodVtx == prodVtx) {
-        prodVtx = part.m_endVtx;
+      if (abs(part.m_pdgId) == 15 && find(prodVtx.begin(), prodVtx.end(), part.m_prodVtx) != prodVtx.end()) {
+        std::replace(prodVtx.begin(), prodVtx.end(), part.m_prodVtx, part.m_endVtx);
       }
-      if (abs(part.m_pdgId) == 15 && part.m_prodVtx == prodVtx) {
-        prodVtx = part.m_endVtx;
-      }
-      if ((abs(part.m_pdgId) == 11 || abs(part.m_pdgId) == 13) && part.m_prodVtx == prodVtx) {
+      if ((abs(part.m_pdgId) == 11 || abs(part.m_pdgId) == 13) && find(prodVtx.begin(), prodVtx.end(), part.m_prodVtx) != prodVtx.end()) {
         if (part.m_status == 3) {
-          status3_lep.SetXYZM(part.m_px,part.m_py,part.m_pz,part.m_m);
+          TLorentzVector lvec;
+          lvec.SetXYZM(part.m_px,part.m_py,part.m_pz,part.m_m);
+          status3_lep.push_back(lvec);
         } else {
-          prodVtx = part.m_endVtx;
+          std::replace(prodVtx.begin(), prodVtx.end(), part.m_prodVtx, part.m_endVtx);
         }
       }
       if ((abs(part.m_pdgId) == 11 || abs(part.m_pdgId) == 13) && part.m_status == 1) {
-        TLorentzVector v1; v1.SetXYZM(part.m_px,part.m_py,part.m_pz,part.m_m);
-        if (status3_lep.DeltaR(v1) < 0.1) {
-          index_vec.push_back(index);
+        TLorentzVector v1; 
+        v1.SetXYZM(part.m_px,part.m_py,part.m_pz,part.m_m);
+        for (auto lep : status3_lep){
+          if (lep.DeltaR(v1) < 0.1) {
+            index_vec.push_back(index);
+          }
         }
-      }      
+      }
     }
   }
   return index_vec;
