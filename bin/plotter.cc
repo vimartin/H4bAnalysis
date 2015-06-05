@@ -87,6 +87,7 @@ int main(int argc, char** argv){
   TCanvas *c1 = new TCanvas();
   c1->cd();
   mysignal->Draw();
+  c1->Update();
 
 
   theApp.Run();

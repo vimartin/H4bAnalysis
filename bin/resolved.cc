@@ -23,6 +23,7 @@
 #include "TH2D.h"
 #include "TF1.h"
 #include "TParticlePDG.h"
+#include "TDatabasePDG.h"
 #include "TString.h"
 #include "TFileCollection.h"
 
@@ -64,11 +65,17 @@ int main(int argc, char** argv){
   // Ghost factor for truth-level B-jet tagging
   double ghost_factor = reader.GetReal("btagging", "ghost_factor", 1.e-21);
 
+  // Use track jets
+  bool use_only_charged = reader.GetBoolean("jet", "use_only_charged", false);
+
   // files
   std::string dataFileName = reader.Get("io", "data_file_name", "UNKNOWN");
   std::string outputFileName = reader.Get("io", "result_file_name", "UNKNOWN");
   bool isSignal = reader.GetBoolean("io", "isSignal", false);
   bool isPythia6 = reader.GetBoolean("io", "isPythia6", false);
+
+  // Used for the track jets
+  TDatabasePDG *db= TDatabasePDG::Instance();
 
   // Read TTree and get the input
   TChain* CollectionTree = new TChain("CollectionTree");
@@ -208,6 +215,11 @@ int main(int argc, char** argv){
       // Not dressing of the electron
       std::vector<int> dressing_index = lepton.getDressingIndex();
       if (std::find(dressing_index.begin(), dressing_index.end(), index)!=dressing_index.end()) continue;
+
+      // Track jets
+      if (use_only_charged){
+        if (db->GetParticle(part.m_pdgId)->Charge() == 0) continue;
+      }
 
       // The rest of particles, consider them to cluster
       input_particles.push_back(fastjet::PseudoJet(partvec.Px(),partvec.Py(),partvec.Pz(),partvec.E()));
