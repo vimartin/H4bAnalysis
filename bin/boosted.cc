@@ -229,6 +229,8 @@ int main(int argc, char** argv){
         lepton.dressLepton(event->m_genParticles, isPythia6, 0.1);
 
         pre_selected_lepton.push_back(lepton);
+        plot1D("h_lepton_preselected_pt", partvec.Pt()/1000., 1., h_1d, "pre-selected lepton pT", 100, 0, 150);
+        plot1D("h_lepton_preselected_eta", partvec.Eta(), 1., h_1d, "pre-selected lepton eta", 100, -5, 5);
         continue;
       }
 
@@ -399,35 +401,35 @@ int main(int argc, char** argv){
     if (pass.find(std::string("passLepton")) != std::string::npos){
       plot1D_cutflow("cutflow", 4, h_1d, "Cut flow", cutflow_bin_title);
     }
-    doAllPlots(1, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec);
+    doAllPlots(1, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec/nentries);
 
     //--- Pass lepton + fat jets requirements
     selected_jets.size()>=2  ? pass=Form("%s-passJets", pass.c_str()) : pass=Form("%s-failJets", pass.c_str());
     if (pass.find(std::string("passLepton-passJets")) != std::string::npos){
       plot1D_cutflow("cutflow", 5, h_1d, "Cut flow", cutflow_bin_title);
     }
-    doAllPlots(1, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec);
+    doAllPlots(1, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec/nentries);
 
     //--- Pass lepton + fat jets + hasSubstructure requirements
     count_if(cf_jetHasSubstructure.begin(), cf_jetHasSubstructure.end(), [&](int x){return (x==1);})>=2 ? pass=Form("%s-passSubstr", pass.c_str()) : pass=Form("%s-failSubstr", pass.c_str());
     if (pass.find(std::string("passLepton-passJets-passSubstr")) != std::string::npos){
       plot1D_cutflow("cutflow", 6, h_1d, "Cut flow", cutflow_bin_title);
     }
-    doAllPlots(1, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec);
+    doAllPlots(1, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec/nentries);
 
     //--- Pass lepton + fat jets + hasSubstructure + subjet requirements
     count_if(cf_numberSubjets.begin(), cf_numberSubjets.end(), [&](int x){return (x>=2);})>=2 ? pass=Form("%s-passSubJet", pass.c_str()) : pass=Form("%s-failSubJet", pass.c_str());
     if (pass.find(std::string("passLepton-passJets-passSubstr-passSubJet")) != std::string::npos){
       plot1D_cutflow("cutflow", 7, h_1d, "Cut flow", cutflow_bin_title);
     }
-    doAllPlots(1, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec);
+    doAllPlots(1, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec/nentries);
 
     //--- Pass lepton + fat jets + hasSubstructure + subjet + b-subjet requirements
     count_if(cf_numberBsubjets.begin(), cf_numberBsubjets.end(), [&](int x){return (x>=2);})>=2 ? pass=Form("%s-passSubBJet", pass.c_str()) : pass=Form("%s-failSubBJet", pass.c_str());
     if (pass.find(std::string("passLepton-passJets-passSubstr-passSubJet-passSubBJet")) != std::string::npos){
       plot1D_cutflow("cutflow", 8, h_1d, "Cut flow", cutflow_bin_title);
     }
-    doAllPlots(1, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec);
+    doAllPlots(1, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec/nentries);
 
   } // end loop events
 

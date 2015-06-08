@@ -2,6 +2,8 @@
 #include <utility>
 #include <iostream>
 
+#include "TROOT.h"
+#include "TStyle.h"
 #include "TLorentzVector.h"
 #include "TFile.h"
 #include "TH1F.h"
@@ -17,6 +19,8 @@ class process {
     void setDistribution(std::string fileName, std::string distribution);
     void setLuminosity(float luminosity);
     void setIsSignal(bool isSignal);
+    void setProperties(float scale, int lineColor, int fillColor);
+
     TH1F* getHistogram();
 
 
@@ -28,6 +32,6 @@ class process {
 };
 
 std::vector<std::string> convertStringToVector(std::string);
-
+void plotStyle();
 
 #endif

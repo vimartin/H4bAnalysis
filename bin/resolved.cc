@@ -201,6 +201,8 @@ int main(int argc, char** argv){
         lepton.dressLepton(event->m_genParticles, isPythia6, 0.1);
 
         pre_selected_lepton.push_back(lepton);
+        plot1D("h_lepton_preselected_pt", partvec.Pt()/1000., 1., h_1d, "pre-selected lepton pT", 100, 0, 150);
+        plot1D("h_lepton_preselected_eta", partvec.Eta(), 1., h_1d, "pre-selected lepton eta", 100, -5, 5);
         continue;
       }
 
@@ -330,27 +332,30 @@ int main(int argc, char** argv){
     } 
 
     // P L O T S
-    std::string pass;
+    //--- All events
+    doAllPlots(0, "", h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec/nentries);
+
     //--- Pass lepton requirement
+    std::string pass;
     selected_lepton.size()>0 ? pass="passLepton" : pass="failLepton";
     if (pass.find(std::string("passLepton")) != std::string::npos){
       plot1D_cutflow("cutflow", 4, h_1d, "Cut flow", cutflow_bin_title);
     }
-    doAllPlots(0, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec);
+    doAllPlots(0, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec/nentries);
 
     //--- Pass lepton + jets requirements
     selected_jets.size()>=4  ? pass=Form("%s-passJets", pass.c_str()) : pass=Form("%s-failJets", pass.c_str());
     if (pass.find(std::string("passLepton-passJets")) != std::string::npos){
       plot1D_cutflow("cutflow", 5, h_1d, "Cut flow", cutflow_bin_title);
     }
-    doAllPlots(0, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec);
+    doAllPlots(0, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec/nentries);
 
     //--- Pass lepton + jets + b-jets requirements
     selected_bjets.size()>=4  ? pass=Form("%s-passBJets", pass.c_str()) : pass=Form("%s-failBJets", pass.c_str());
     if (pass.find(std::string("passLepton-passJets-passBJets")) != std::string::npos){
       plot1D_cutflow("cutflow", 6, h_1d, "Cut flow", cutflow_bin_title);
     }
-    doAllPlots(0, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec);
+    doAllPlots(0, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec/nentries);
 
   } // end loop entries
 
@@ -360,6 +365,7 @@ int main(int argc, char** argv){
   cout << "Acceptance: " << endl << "   " << 100*h_1d["cutflow"]->GetBinContent(7)/h_1d["cutflow"]->GetBinContent(1) << "%" << endl;
 
   TFile* resultFile = TFile::Open(Form("results/%s", outputFileName.c_str()), "RECREATE");
+  cout << Form("\nresults/%s has been created.", outputFileName.c_str()) << endl;
 
   // Writing and deleting all histos
   std::map<std::string, TH1*>::iterator it1d;
