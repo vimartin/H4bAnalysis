@@ -31,6 +31,16 @@ bool isBjet(const fastjet::PseudoJet& jet)
   
 }
 
+int nBpartonInBjet(const fastjet::PseudoJet& jet)
+{
+  int nb = 0;
+  vector<fastjet::PseudoJet> constituents = jet.constituents();
+  for (auto constituent : constituents) 
+    if (constituent.user_index() == -5) nb++;
+  return nb;
+  
+}
+
 bool isBpartonJet(const fastjet::PseudoJet& jet, int parton)
 {
 
@@ -140,6 +150,43 @@ double findBoostedRecoHmass(std::vector<particleJet> selected_jets){
   }
   recoHmass = H_tlv.M()/1000.;
   return recoHmass;
+}
+
+double findResolvedRecoAmass(std::vector<particleJet> selected_bjets)
+{
+  double recoAmass = -9999;
+  if (selected_bjets.size()<4) return recoAmass;
+
+  TLorentzVector j1_tlv, j2_tlv, j3_tlv, j4_tlv;
+  int counter = 0;
+  for (auto jet : selected_bjets){
+    if (counter==0) j1_tlv = jet.jet;
+    if (counter==1) j2_tlv = jet.jet;
+    if (counter==2) j3_tlv = jet.jet;
+    if (counter==3) j4_tlv = jet.jet;
+    counter ++;
+  }
+
+  std::vector<double> comb1;
+  comb1.push_back((j1_tlv+j2_tlv).M());
+  comb1.push_back((j3_tlv+j4_tlv).M());
+  double diff1 = fabs(comb1.at(0) - comb1.at(1));
+
+  std::vector<double> comb2;
+  comb2.push_back((j1_tlv+j3_tlv).M());
+  comb2.push_back((j2_tlv+j4_tlv).M());
+  double diff2 = fabs(comb2.at(0) - comb2.at(1));
+
+  std::vector<double> comb3;
+  comb3.push_back((j1_tlv+j4_tlv).M());
+  comb3.push_back((j2_tlv+j3_tlv).M());
+  double diff3 = fabs(comb3.at(0) - comb3.at(1));
+
+  if (min(diff1, min(diff2, diff3))==diff1)      recoAmass = (comb1.at(0)+comb1.at(1))/2.;
+  else if (min(diff1, min(diff2, diff3))==diff2) recoAmass = (comb2.at(0)+comb2.at(1))/2.;
+  else if (min(diff1, min(diff2, diff3))==diff3) recoAmass = (comb3.at(0)+comb3.at(1))/2.;
+
+  return recoAmass/1000.;
 }
 
 

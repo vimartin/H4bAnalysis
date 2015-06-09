@@ -288,6 +288,7 @@ int main(int argc, char** argv){
       particleJet partJet;
       partJet.jet = jetvec;
       partJet.isBjet = isBjet(jet);
+      partJet.nBpartons = nBpartonInBjet(jet);
       partJet.pseudoJet = jet;
 
       if (isSignal) {
