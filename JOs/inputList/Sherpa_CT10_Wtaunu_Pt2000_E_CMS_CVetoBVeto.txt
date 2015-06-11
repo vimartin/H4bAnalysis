@@ -1,0 +1,5 @@
+data/Sherpa_CT10_Wtaunu_Pt2000_E_CMS_CVetoBVeto/EVNT.05280924._000002.pool.root.1
+data/Sherpa_CT10_Wtaunu_Pt2000_E_CMS_CVetoBVeto/EVNT.05280924._000003.pool.root.1
+data/Sherpa_CT10_Wtaunu_Pt2000_E_CMS_CVetoBVeto/EVNT.05280924._000004.pool.root.1
+data/Sherpa_CT10_Wtaunu_Pt2000_E_CMS_CVetoBVeto/EVNT.05280924._000007.pool.root.1
+data/Sherpa_CT10_Wtaunu_Pt2000_E_CMS_CVetoBVeto/EVNT.05280924._000010.pool.root.1

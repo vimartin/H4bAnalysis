@@ -1,0 +1,5 @@
+data/Sherpa_CT10_Wenu_Pt140_280_CFilterBVeto/EVNT.05126622._005404.pool.root.1
+data/Sherpa_CT10_Wenu_Pt140_280_CFilterBVeto/EVNT.05126622._007951.pool.root.1
+data/Sherpa_CT10_Wenu_Pt140_280_CFilterBVeto/EVNT.05126622._008800.pool.root.1
+data/Sherpa_CT10_Wenu_Pt140_280_CFilterBVeto/EVNT.05126622._010432.pool.root.1
+data/Sherpa_CT10_Wenu_Pt140_280_CFilterBVeto/EVNT.05126622._010438.pool.root.1

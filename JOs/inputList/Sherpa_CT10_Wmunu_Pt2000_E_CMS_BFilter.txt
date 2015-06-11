@@ -1,0 +1,5 @@
+data/Sherpa_CT10_Wmunu_Pt2000_E_CMS_BFilter/EVNT.05503533._000155.pool.root.1
+data/Sherpa_CT10_Wmunu_Pt2000_E_CMS_BFilter/EVNT.05503533._000440.pool.root.1
+data/Sherpa_CT10_Wmunu_Pt2000_E_CMS_BFilter/EVNT.05503533._000487.pool.root.1
+data/Sherpa_CT10_Wmunu_Pt2000_E_CMS_BFilter/EVNT.05503533._000488.pool.root.1
+data/Sherpa_CT10_Wmunu_Pt2000_E_CMS_BFilter/EVNT.05503533._000780.pool.root.1

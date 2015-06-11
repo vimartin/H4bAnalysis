@@ -1,0 +1,7 @@
+data/Sherpa_CT10_Wtaunu_Pt280_500_BFilter/EVNT.05504100._000071.pool.root.1
+data/Sherpa_CT10_Wtaunu_Pt280_500_BFilter/EVNT.05504100._000448.pool.root.1
+data/Sherpa_CT10_Wtaunu_Pt280_500_BFilter/EVNT.05504100._000552.pool.root.1
+data/Sherpa_CT10_Wtaunu_Pt280_500_BFilter/EVNT.05504100._001248.pool.root.1
+data/Sherpa_CT10_Wtaunu_Pt280_500_BFilter/EVNT.05504100._003218.pool.root.1
+data/Sherpa_CT10_Wtaunu_Pt280_500_BFilter/EVNT.05504100._005305.pool.root.1
+data/Sherpa_CT10_Wtaunu_Pt280_500_BFilter/EVNT.05504100._005344.pool.root.1

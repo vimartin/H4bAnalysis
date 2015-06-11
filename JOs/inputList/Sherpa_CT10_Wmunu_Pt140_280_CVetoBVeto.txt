@@ -1,0 +1,10 @@
+data/Sherpa_CT10_Wmunu_Pt140_280_CVetoBVeto/EVNT.05126636._000168.pool.root.1
+data/Sherpa_CT10_Wmunu_Pt140_280_CVetoBVeto/EVNT.05126636._000698.pool.root.1
+data/Sherpa_CT10_Wmunu_Pt140_280_CVetoBVeto/EVNT.05126636._000755.pool.root.1
+data/Sherpa_CT10_Wmunu_Pt140_280_CVetoBVeto/EVNT.05126636._001166.pool.root.1
+data/Sherpa_CT10_Wmunu_Pt140_280_CVetoBVeto/EVNT.05126636._001174.pool.root.1
+data/Sherpa_CT10_Wmunu_Pt140_280_CVetoBVeto/EVNT.05476116._001216.pool.root.1
+data/Sherpa_CT10_Wmunu_Pt140_280_CVetoBVeto/EVNT.05476116._001990.pool.root.1
+data/Sherpa_CT10_Wmunu_Pt140_280_CVetoBVeto/EVNT.05476116._002021.pool.root.1
+data/Sherpa_CT10_Wmunu_Pt140_280_CVetoBVeto/EVNT.05476116._002677.pool.root.1
+data/Sherpa_CT10_Wmunu_Pt140_280_CVetoBVeto/EVNT.05476116._004150.pool.root.1

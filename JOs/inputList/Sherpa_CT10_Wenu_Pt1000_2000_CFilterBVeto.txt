@@ -1,0 +1,3 @@
+data/Sherpa_CT10_Wenu_Pt1000_2000_CFilterBVeto/EVNT.05503392._000188.pool.root.1
+data/Sherpa_CT10_Wenu_Pt1000_2000_CFilterBVeto/EVNT.05503392._000203.pool.root.1
+data/Sherpa_CT10_Wenu_Pt1000_2000_CFilterBVeto/EVNT.05503392._000222.pool.root.1

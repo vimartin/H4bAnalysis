@@ -1,0 +1,2 @@
+data/Sherpa_CT10_Wtaunu_Pt0_70_CFilterBVeto/EVNT.05271293._005845.pool.root.1
+data/Sherpa_CT10_Wtaunu_Pt0_70_CFilterBVeto/EVNT.05271293._005950.pool.root.1
