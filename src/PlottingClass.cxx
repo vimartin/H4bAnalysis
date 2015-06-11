@@ -155,6 +155,7 @@ void plotClass::plotUpperPad()
     break;
   }
 
+
   //--- Fill the map and histo of total background and signal
   float n_totalbkg = 0.;
   float n_totalsig = 0.;
@@ -178,6 +179,7 @@ void plotClass::plotUpperPad()
     n_totalsig += m_sample_map[sig.c_str()].getHistogram()->Integral();
   }
 
+
   //--- Set Log scale, maximum and minimum for the plot
   float ymax = 0.;
   for (int ibin=1; ibin<m_hbkg->GetSize()-1; ibin++){
@@ -186,15 +188,31 @@ void plotClass::plotUpperPad()
   for (int ibin=1; ibin<m_hsig->GetSize()-1; ibin++){
     if (m_hsig->GetBinContent(ibin)>ymax) ymax = m_hsig->GetBinContent(ibin);
   }
+
   m_sbkg->SetMaximum(ymax*1.2);
   m_sbkg->SetMinimum(0.);
+
   if (m_doLogScale){
     m_sbkg->SetMinimum(fmin(n_totalbkg, n_totalsig)/100.);
     gPad->SetLogy();
   }
 
+
+  //--- Cosmetics for errors
+  TH1F *hLine = (TH1F*) m_hbkg->Clone();
+  hLine->SetLineColor(kRed+2);
+  hLine->SetLineWidth(2);
+
+  m_hbkg->SetLineWidth(4);
+  m_hbkg->SetMarkerSize(0);
+  m_hbkg->SetFillColor(kGray+3);
+  m_hbkg->SetFillStyle(3004);
+  m_hbkg->SetLineColor(kRed);
+
   //--- Draw THStacks and histograms
   m_sbkg->Draw("histo");
+  m_hbkg->Draw("e2same");
+  hLine->Draw("histosame");
   m_ssig->Draw("histosame");
 
   //--- Set cosmetics for THStack

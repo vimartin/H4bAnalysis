@@ -271,6 +271,32 @@ int main(int argc, char** argv){
 
       plot2D("h_bbar_dR_vs_H_pT", b1.DeltaR(b2), (b1+b2+b3+b4).Pt()/1000., 1., h_2d, "bbar dR vs Higgs pT", 100, 0., 5., 100, 0., 150.);
       plot2D("h_bbar_dR_vs_H_pT", b3.DeltaR(b4), (b1+b2+b3+b4).Pt()/1000., 1., h_2d, "bbar dR vs Higgs pT", 100, 0., 5., 100, 0., 150.);
+      plot2D("h_bbar_dR_vs_A_pT", b1.DeltaR(b2), (b1+b2).Pt()/1000., 1., h_2d, "bbar dR vs pseudoscalar pT", 100, 0., 5., 100, 0., 150.);
+      plot2D("h_bbar_dR_vs_A_pT", b3.DeltaR(b4), (b3+b4).Pt()/1000., 1., h_2d, "bbar dR vs pseudoscalar pT", 100, 0., 5., 100, 0., 150.);
+      if (((b1+b2).Pt()>0. && (b1+b2).Pt()<20000.) || ((b3+b4).Pt()>0. && (b3+b4).Pt()<20000.)){
+        plot1D("h_bbar_dR_A_pT_0_20", b1.DeltaR(b2), 1., h_1d, "bbar dR for 0 < ApT < 20", 100, 0, 5.);
+        plot1D("h_bbar_dR_A_pT_0_20", b3.DeltaR(b4), 1., h_1d, "bbar dR for 0 < ApT < 20", 100, 0, 5.);
+      }
+      if (((b1+b2).Pt()>20000. && (b1+b2).Pt()<40000.) || ((b3+b4).Pt()>20000. && (b3+b4).Pt()<40000.)){
+        plot1D("h_bbar_dR_A_pT_20_40", b1.DeltaR(b2), 1., h_1d, "bbar dR for 20 < ApT < 40", 100, 0, 5.);
+        plot1D("h_bbar_dR_A_pT_20_40", b3.DeltaR(b4), 1., h_1d, "bbar dR for 20 < ApT < 40", 100, 0, 5.);
+      }
+      if (((b1+b2).Pt()>40000. && (b1+b2).Pt()<60000.) || ((b3+b4).Pt()>40000. && (b3+b4).Pt()<60000.)){
+        plot1D("h_bbar_dR_A_pT_40_60", b1.DeltaR(b2), 1., h_1d, "bbar dR for 40 < ApT < 60", 100, 0, 5.);
+        plot1D("h_bbar_dR_A_pT_40_60", b3.DeltaR(b4), 1., h_1d, "bbar dR for 40 < ApT < 60", 100, 0, 5.);
+      }
+      if (((b1+b2).Pt()>60000. && (b1+b2).Pt()<80000.) || ((b3+b4).Pt()>60000. && (b3+b4).Pt()<80000.)){
+        plot1D("h_bbar_dR_A_pT_60_80", b1.DeltaR(b2), 1., h_1d, "bbar dR for 60 < ApT < 80", 100, 0, 5.);
+        plot1D("h_bbar_dR_A_pT_60_80", b3.DeltaR(b4), 1., h_1d, "bbar dR for 60 < ApT < 80", 100, 0, 5.);
+      }
+      if (((b1+b2).Pt()>80000. && (b1+b2).Pt()<100000.) || ((b3+b4).Pt()>80000. && (b3+b4).Pt()<100000.)){
+        plot1D("h_bbar_dR_A_pT_80_100", b1.DeltaR(b2), 1., h_1d, "bbar dR for 80 < ApT < 100", 100, 0, 5.);
+        plot1D("h_bbar_dR_A_pT_80_100", b3.DeltaR(b4), 1., h_1d, "bbar dR for 80 < ApT < 100", 100, 0, 5.);
+      }
+      if (((b1+b2).Pt()>100000.) || ((b3+b4).Pt()>100000.)){
+        plot1D("h_bbar_dR_A_pT_100", b1.DeltaR(b2), 1., h_1d, "bbar dR for ApT < 100", 100, 0, 5.);
+        plot1D("h_bbar_dR_A_pT_100", b3.DeltaR(b4), 1., h_1d, "bbar dR for ApT < 100", 100, 0, 5.);
+      }
     }
 
     // cluster the jets

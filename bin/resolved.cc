@@ -104,8 +104,11 @@ int main(int argc, char** argv){
   cutflow_bin_title.push_back("lep pt");
   cutflow_bin_title.push_back("lep eta");
   cutflow_bin_title.push_back("lep iso");
-  cutflow_bin_title.push_back("4 jets");
-  cutflow_bin_title.push_back("4 bjets");
+  cutflow_bin_title.push_back("3 jets");
+  cutflow_bin_title.push_back(">=4 jets");
+  cutflow_bin_title.push_back("3 jets - 3 bjets");
+  cutflow_bin_title.push_back("4 jets - 3 bjets");
+  cutflow_bin_title.push_back("4 jets - 4 bjets");
 
   // Define particle vectors
   std::vector<fastjet::PseudoJet> input_particles;
@@ -254,6 +257,35 @@ int main(int argc, char** argv){
 
       plot2D("h_bbar_dR_vs_H_pT", b1.DeltaR(b2), (b1+b2+b3+b4).Pt()/1000., 1., h_2d, "bbar dR vs Higgs pT", 100, 0., 5., 100, 0., 150.);
       plot2D("h_bbar_dR_vs_H_pT", b3.DeltaR(b4), (b1+b2+b3+b4).Pt()/1000., 1., h_2d, "bbar dR vs Higgs pT", 100, 0., 5., 100, 0., 150.);
+      plot2D("h_bbar_dR_vs_A_pT", b1.DeltaR(b2), (b1+b2).Pt()/1000., 1., h_2d, "bbar dR vs pseudoscalar pT", 100, 0., 5., 100, 0., 150.);
+      plot2D("h_bbar_dR_vs_A_pT", b3.DeltaR(b4), (b3+b4).Pt()/1000., 1., h_2d, "bbar dR vs pseudoscalar pT", 100, 0., 5., 100, 0., 150.);
+
+      if (((b1+b2).Pt()>0. && (b1+b2).Pt()<20000.) || ((b3+b4).Pt()>0. && (b3+b4).Pt()<20000.)){
+        plot1D("h_bbar_dR_A_pT_0_20", b1.DeltaR(b2), 1., h_1d, "bbar dR for 0 < ApT < 20", 100, 0, 5.);
+        plot1D("h_bbar_dR_A_pT_0_20", b3.DeltaR(b4), 1., h_1d, "bbar dR for 0 < ApT < 20", 100, 0, 5.);
+      }
+      if (((b1+b2).Pt()>20000. && (b1+b2).Pt()<40000.) || ((b3+b4).Pt()>20000. && (b3+b4).Pt()<40000.)){
+        plot1D("h_bbar_dR_A_pT_20_40", b1.DeltaR(b2), 1., h_1d, "bbar dR for 20 < ApT < 40", 100, 0, 5.);
+        plot1D("h_bbar_dR_A_pT_20_40", b3.DeltaR(b4), 1., h_1d, "bbar dR for 20 < ApT < 40", 100, 0, 5.);
+      }
+      if (((b1+b2).Pt()>40000. && (b1+b2).Pt()<60000.) || ((b3+b4).Pt()>40000. && (b3+b4).Pt()<60000.)){
+        plot1D("h_bbar_dR_A_pT_40_60", b1.DeltaR(b2), 1., h_1d, "bbar dR for 40 < ApT < 60", 100, 0, 5.);
+        plot1D("h_bbar_dR_A_pT_40_60", b3.DeltaR(b4), 1., h_1d, "bbar dR for 40 < ApT < 60", 100, 0, 5.);
+      }
+      if (((b1+b2).Pt()>60000. && (b1+b2).Pt()<80000.) || ((b3+b4).Pt()>60000. && (b3+b4).Pt()<80000.)){
+        plot1D("h_bbar_dR_A_pT_60_80", b1.DeltaR(b2), 1., h_1d, "bbar dR for 60 < ApT < 80", 100, 0, 5.);
+        plot1D("h_bbar_dR_A_pT_60_80", b3.DeltaR(b4), 1., h_1d, "bbar dR for 60 < ApT < 80", 100, 0, 5.);
+      }
+      if (((b1+b2).Pt()>80000. && (b1+b2).Pt()<100000.) || ((b3+b4).Pt()>80000. && (b3+b4).Pt()<100000.)){
+        plot1D("h_bbar_dR_A_pT_80_100", b1.DeltaR(b2), 1., h_1d, "bbar dR for 80 < ApT < 100", 100, 0, 5.);
+        plot1D("h_bbar_dR_A_pT_80_100", b3.DeltaR(b4), 1., h_1d, "bbar dR for 80 < ApT < 100", 100, 0, 5.);
+      }
+      if (((b1+b2).Pt()>100000.) || ((b3+b4).Pt()>100000.)){
+        plot1D("h_bbar_dR_A_pT_100", b1.DeltaR(b2), 1., h_1d, "bbar dR for ApT < 100", 100, 0, 5.);
+        plot1D("h_bbar_dR_A_pT_100", b3.DeltaR(b4), 1., h_1d, "bbar dR for ApT < 100", 100, 0, 5.);
+      }
+      float max_b_dR = max(max(max(max(max(b1.DeltaR(b2), b1.DeltaR(b3)), b1.DeltaR(b4)), b2.DeltaR(b3)), b2.DeltaR(b4)), b3.DeltaR(b4));
+      plot2D("h_max_bbar_dR_vs_H_pT", max_b_dR, (b1+b2+b3+b4).Pt()/1000., 1., h_2d, "max bbar dR vs Higgs pT", 100, 0., 5., 100, 0., 150.);
     }
 
     // cluster the jets
@@ -333,10 +365,14 @@ int main(int argc, char** argv){
       }
     } 
 
+    // =========
     // P L O T S
+    // =========
+
     //--- All events
     doAllPlots(0, "", h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec/nentries);
 
+    //=== PRESELECTION
     //--- Pass lepton requirement
     std::string pass;
     selected_lepton.size()>0 ? pass="passLepton" : pass="failLepton";
@@ -345,17 +381,36 @@ int main(int argc, char** argv){
     }
     doAllPlots(0, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec/nentries);
 
-    //--- Pass lepton + jets requirements
-    selected_jets.size()>=4  ? pass=Form("%s-passJets", pass.c_str()) : pass=Form("%s-failJets", pass.c_str());
-    if (pass.find(std::string("passLepton-passJets")) != std::string::npos){
+
+    //=== SELECTION
+    //--- Jets requirements
+
+    selected_jets.size()==3  ? pass=Form("%s-pass3Jets", pass.c_str()) : pass=Form("%s-fail3Jets", pass.c_str());
+    if (pass.find(std::string("passLepton-pass3Jets")) != std::string::npos){
       plot1D_cutflow("cutflow", 5, h_1d, "Cut flow", cutflow_bin_title);
     }
     doAllPlots(0, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec/nentries);
 
-    //--- Pass lepton + jets + b-jets requirements
-    selected_bjets.size()>=4  ? pass=Form("%s-passBJets", pass.c_str()) : pass=Form("%s-failBJets", pass.c_str());
-    if (pass.find(std::string("passLepton-passJets-passBJets")) != std::string::npos){
+    selected_jets.size()>=4  ? pass=Form("%s-pass4Jets", pass.c_str()) : pass=Form("%s-fail4Jets", pass.c_str());
+    if (pass.find(std::string("passLepton-fail3Jets-pass4Jets")) != std::string::npos){
       plot1D_cutflow("cutflow", 6, h_1d, "Cut flow", cutflow_bin_title);
+    }
+    doAllPlots(0, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec/nentries);
+
+    //--- B-jets requirements (signal regions)
+
+    selected_bjets.size()==3  ? pass=Form("%s-pass3BJets", pass.c_str()) : pass=Form("%s-fail3BJets", pass.c_str());
+    if (pass.find(std::string("passLepton-pass3Jets-fail4Jets-pass3BJets")) != std::string::npos){
+      plot1D_cutflow("cutflow", 7, h_1d, "Cut flow", cutflow_bin_title); //3j-3b
+    }
+    if (pass.find(std::string("passLepton-fail3Jets-pass4Jets-pass3BJets")) != std::string::npos){
+      plot1D_cutflow("cutflow", 8, h_1d, "Cut flow", cutflow_bin_title); //4j-3b
+    }
+    doAllPlots(0, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec/nentries);
+
+    selected_bjets.size()>=4  ? pass=Form("%s-pass4BJets", pass.c_str()) : pass=Form("%s-fail4BJets", pass.c_str());
+    if (pass.find(std::string("passLepton-fail3Jets-pass4Jets-fail3BJets-pass4BJets")) != std::string::npos){
+      plot1D_cutflow("cutflow", 9, h_1d, "Cut flow", cutflow_bin_title); //4j-4b
     }
     doAllPlots(0, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec/nentries);
 
@@ -364,7 +419,9 @@ int main(int argc, char** argv){
 
 
   cout << "---- REPORT ----" << endl;
-  cout << "Acceptance: " << endl << "   " << 100*h_1d["cutflow"]->GetBinContent(7)/h_1d["cutflow"]->GetBinContent(1) << "%" << endl;
+  cout << "Acceptance 3j-3b: " << endl << "   " << 100*h_1d["cutflow"]->GetBinContent(8)/h_1d["cutflow"]->GetBinContent(1) << "%" << endl;
+  cout << "Acceptance 4j-3b: " << endl << "   " << 100*h_1d["cutflow"]->GetBinContent(9)/h_1d["cutflow"]->GetBinContent(1) << "%" << endl;
+  cout << "Acceptance 4j-4b: " << endl << "   " << 100*h_1d["cutflow"]->GetBinContent(10)/h_1d["cutflow"]->GetBinContent(1) << "%" << endl;
 
   TFile* resultFile = TFile::Open(Form("results/%s", outputFileName.c_str()), "RECREATE");
   cout << Form("\nresults/%s has been created.", outputFileName.c_str()) << endl;

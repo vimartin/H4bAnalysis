@@ -617,6 +617,7 @@ void doAllPlots(int analysis_type, std::string pass, std::map<string, TH1*> &h_1
     plot1D(Form("h_nbjets-%s",pass.c_str()), selected_bjets.size(), weight, h_1d, "", 10, -0.5, 9.5);
     plot1D(Form("h_RecoHMass-%s",pass.c_str()), findResolvedRecoHmass(selected_bjets), weight, h_1d, "", 25, 0., 250.);
     plot1D(Form("h_RecoAMass-%s",pass.c_str()), findResolvedRecoAmass(selected_bjets), weight, h_1d, "", 25, 0., 250.);
+    plot2D(Form("h_njets_vs_nbjets-%s",pass.c_str()), selected_jets.size(), selected_bjets.size(), weight, h_2d, "", 10, -0.5, 9.5, 10, -0.5, 9.5);
     for (auto bjet : selected_bjets) {
       plot1D(Form("h_bjets_pt-%s",pass.c_str()), bjet.jet.Pt()/1000., weight, h_1d, "", 30, 0., 300);
       plot1D(Form("h_bjets_eta-%s",pass.c_str()), bjet.jet.Eta(), weight, h_1d, "", 100, -5, 5);

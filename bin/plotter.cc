@@ -103,11 +103,8 @@ int main(int argc, char** argv){
   gROOT->SetStyle("ATLAS");
   gROOT->ForceStyle();
 
-  for (auto bkg : bkgName){
-    cout<<bkg<<endl;
-  }
-
   for (auto distribution : distribution_vec) {
+    std::cout<<"\nPlotting "<<distribution<<std::endl;
     plotClass *plot = new plotClass(distribution);
     plot->setGlobalProperties(luminosity, doLogScale, savePlot);
     plot->setSampleNames(bkgName, sigName);
@@ -121,7 +118,7 @@ int main(int argc, char** argv){
     if (distribution.find("total_events") != std::string::npos){
       plot->printSummary();
     }
-//    if (savePlot) delete plot;
+    if (savePlot) delete plot;
   }
 
   if (!savePlot){
