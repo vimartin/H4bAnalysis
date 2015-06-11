@@ -73,6 +73,7 @@ int main(int argc, char** argv){
   std::string outputFileName = reader.Get("io", "result_file_name", "UNKNOWN");
   bool isSignal = reader.GetBoolean("io", "isSignal", false);
   bool isPythia6 = reader.GetBoolean("io", "isPythia6", false);
+  bool isSherpa = reader.GetBoolean("io", "isSherpa", false);
 
   // Used for the track jets
   TDatabasePDG *db= TDatabasePDG::Instance();
@@ -149,7 +150,7 @@ int main(int argc, char** argv){
     TLorentzVector partvec;
 
     // Find the index of the hard scatter leptons
-    std::vector<int> theHL = findHardScatterLeptons(event->m_genParticles, isPythia6);
+    std::vector<int> theHL = findHardScatterLeptons(event->m_genParticles, isSherpa, isPythia6);
     particleLepton lepton;
 
     // Loop over all particles in the event

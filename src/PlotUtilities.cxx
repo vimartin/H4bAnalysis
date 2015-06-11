@@ -600,6 +600,7 @@ void plot3D(string name, float xval, float yval, float zval, double weight, std:
 void doAllPlots(int analysis_type, std::string pass, std::map<string, TH1*> &h_1d, std::map<string, TH2D*> &h_2d, std::vector<particleJet> selected_jets, std::vector<particleJet> selected_bjets, std::vector<particleLepton> selected_lepton, double weight)
 {
 
+  plot1D(Form("h_total_events-%s",pass.c_str()), 0.5, weight, h_1d, "", 1, 0., 1.);
   if (analysis_type==0){ //--- 0: resolved analysis
     for (auto lepton : selected_lepton){
       plot1D(Form("h_lepton_pt-%s",pass.c_str()), lepton.getLeptonDressed().Pt()/1000., weight, h_1d, "", 100, 0., 150.);

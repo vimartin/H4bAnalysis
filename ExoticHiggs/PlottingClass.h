@@ -54,6 +54,7 @@ class plotClass {
     void plotLowerPad();
     void plotSidePad();
     void finalize();
+    void printSummary();
 
   private:
     std::string m_distribution;

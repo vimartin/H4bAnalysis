@@ -15,9 +15,9 @@ void process::setDistribution(std::string fileName, std::string distribution)
   std::cout<<"process::setDistribution: Opening "<<fileName<<"..."<<std::endl;
   TFile *file = new TFile(fileName.c_str());
   if (file->GetListOfKeys()->Contains(m_distribution.c_str())){
+    m_histoExists = true;
     m_histogram = (TH1F*) file->Get(m_distribution.c_str())->Clone();
     m_histogram->SetDirectory(0);
-    m_histoExists = true;
   }
   else{
     m_histoExists = false;
@@ -30,7 +30,7 @@ void process::setDistribution(std::string fileName, std::string distribution)
 void process::setLuminosity(float luminosity)
 {
   m_luminosity = luminosity;
-  if (m_histoExists) m_histogram->Scale(m_luminosity);
+  m_histogram->Scale(m_luminosity);
 }
 
 void process::setIsSignal(bool isSignal)
@@ -137,7 +137,7 @@ void plotClass::prepareCanvas()
   m_pad2->SetGrid(0,1);
   m_pad2->Draw("same");
 
-  m_pad3 = new TPad(Form("pad3_%s", m_distribution.c_str()), Form("pad3_%s", m_distribution.c_str()), 0.76, 0.01, .99, 1);
+  m_pad3 = new TPad(Form("pad3_%s", m_distribution.c_str()), Form("pad3_%s", m_distribution.c_str()), 0.76, 0.01, .99, 0.99);
   m_pad3->Draw("same");
 }
 
@@ -239,17 +239,17 @@ void plotClass::plotSidePad()
 {
   m_pad3->cd();
 
-  m_legend = new TLegend(0., 0.295, 1., 1.);
-  m_legend->SetTextSize(0.05);
+  m_legend = new TLegend(0., 0.1, 1., 1.);
+  m_legend->SetTextSize(0.045);
   m_legend->SetBorderSize(1);
   m_legend->SetLineColor(kWhite);
 
   for (auto bkg : m_bkgName){
-    m_legend->AddEntry(m_sample_map[bkg.c_str()].getHistogram(), bkg.c_str(), "lf");
+    m_legend->AddEntry(m_sample_map[bkg.c_str()].getHistogram(), Form("%s: %.1f", bkg.c_str(), m_sample_map[bkg.c_str()].getHistogram()->Integral()), "lf");
   }
 
   for (auto sig : m_sigName){
-    m_legend->AddEntry(m_sample_map[sig.c_str()].getHistogram(), sig.c_str(), "l");
+    m_legend->AddEntry(m_sample_map[sig.c_str()].getHistogram(), Form("%s: %.1f", sig.c_str(), m_sample_map[sig.c_str()].getHistogram()->Integral()), "l");
   }
 
   m_legend->Draw();
@@ -263,6 +263,18 @@ void plotClass::finalize()
     m_canvas->Print(Form("plots/%s.gif", m_distribution.c_str()));
     m_canvas->Print(Form("plots/%s.eps", m_distribution.c_str()));
   }
+}
+
+void plotClass::printSummary()
+{
+  std::cout<<"\n\n"<<std::endl;
+  std::cout<<"=== S U M A R Y ==="<<std::endl;
+  std::cout<<"Total Background : "<<m_hbkg->Integral()<<std::endl;
+  std::cout<<"Signal           : "<<m_hsig->Integral()<<std::endl;
+  std::cout<<"S / B            : "<<m_hsig->Integral()/m_hbkg->Integral()<<std::endl;
+  std::cout<<"S / sqrt(B)      : "<<m_hsig->Integral()/sqrt(m_hbkg->Integral())<<std::endl;
+  std::cout<<"==================="<<std::endl;
+  std::cout<<"\n\n"<<std::endl;
 }
 
 

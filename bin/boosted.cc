@@ -99,6 +99,7 @@ int main(int argc, char** argv){
   double hypMass = reader.GetReal("io", "hyp_mass", 20.);
   bool isSignal = reader.GetBoolean("io", "isSignal", false);
   bool isPythia6 = reader.GetBoolean("io", "isPythia6", false);
+  bool isSherpa = reader.GetBoolean("io", "isSherpa", false);
 
   TDatabasePDG *db= TDatabasePDG::Instance();
 
@@ -177,7 +178,7 @@ int main(int argc, char** argv){
     TLorentzVector partvec;
 
     // Find the index of the hard scatter leptons
-    std::vector<int> theHL = findHardScatterLeptons(event->m_genParticles, isPythia6);
+    std::vector<int> theHL = findHardScatterLeptons(event->m_genParticles, isSherpa, isPythia6);
     particleLepton lepton;
 
     // Loop over all particles in the event

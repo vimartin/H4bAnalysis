@@ -118,6 +118,9 @@ int main(int argc, char** argv){
     plot->plotLowerPad();
     plot->plotSidePad();
     plot->finalize();
+    if (distribution.find("total_events") != std::string::npos){
+      plot->printSummary();
+    }
 //    if (savePlot) delete plot;
   }
 
