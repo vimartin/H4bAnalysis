@@ -259,27 +259,27 @@ int main(int argc, char** argv){
     fastjet::ClusterSequence clust_seq(input_particles, jet_def);    
     vector<fastjet::PseudoJet> inclusive_jets = sorted_by_pt(clust_seq.inclusive_jets(jet_ptmin));
 
-    // Check pt and eta effect in Njets
-    for (int j=0; j<4; j++){
-      float _pt = (5+j*5)*1000;
-      fastjet::ClusterSequence clust_seq_test(input_particles, jet_def);    
-      vector<fastjet::PseudoJet> inclusive_jets_test = sorted_by_pt(clust_seq_test.inclusive_jets(_pt));
-      for (int i=0; i<25; i++){
-        float _eta = i*0.2;
-        int _njets=0;
-        int _nbjets=0;
-        for (auto jet : inclusive_jets_test) {
-          TLorentzVector jetvec(jet.px(), jet.py(), jet.pz(), jet.e());
-          if (fabs(jetvec.Eta())>_eta) continue;
-          _njets++;
-          if (!isBjet(jet)) continue;
-          _nbjets++;
-        }
-        plot1D(Form("h_njets_ptmin%.1f_abseta%.1f",_pt, _eta), _njets, 1., h_1d, Form("Njets with ptmin<%.1f and |eta|<%.1f", _pt,  _eta), 10, 0., 10.);
-        plot1D(Form("h_nbjets_ptmin%.1f_abseta%.1f",_pt, _eta), _nbjets, 1., h_1d, Form("Nbjets with ptmin<%.1f and |eta|<%.1f", _pt,  _eta), 10, 0., 10.);
-      }
-      inclusive_jets_test.clear();
-    }
+//    // Check pt and eta effect in Njets
+//    for (int j=0; j<4; j++){
+//      float _pt = (5+j*5)*1000;
+//      fastjet::ClusterSequence clust_seq_test(input_particles, jet_def);    
+//      vector<fastjet::PseudoJet> inclusive_jets_test = sorted_by_pt(clust_seq_test.inclusive_jets(_pt));
+//      for (int i=0; i<25; i++){
+//        float _eta = i*0.2;
+//        int _njets=0;
+//        int _nbjets=0;
+//        for (auto jet : inclusive_jets_test) {
+//          TLorentzVector jetvec(jet.px(), jet.py(), jet.pz(), jet.e());
+//          if (fabs(jetvec.Eta())>_eta) continue;
+//          _njets++;
+//          if (!isBjet(jet)) continue;
+//          _nbjets++;
+//        }
+//        plot1D(Form("h_njets_ptmin%.1f_abseta%.1f",_pt, _eta), _njets, 1., h_1d, Form("Njets with ptmin<%.1f and |eta|<%.1f", _pt,  _eta), 10, 0., 10.);
+//        plot1D(Form("h_nbjets_ptmin%.1f_abseta%.1f",_pt, _eta), _nbjets, 1., h_1d, Form("Nbjets with ptmin<%.1f and |eta|<%.1f", _pt,  _eta), 10, 0., 10.);
+//      }
+//      inclusive_jets_test.clear();
+//    }
 
     // Jet reconstruction
     for (auto jet : inclusive_jets) {

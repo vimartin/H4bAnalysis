@@ -14,15 +14,23 @@ void process::setDistribution(std::string fileName, std::string distribution)
 
   std::cout<<"process::setDistribution: Opening "<<fileName<<"..."<<std::endl;
   TFile *file = new TFile(fileName.c_str());
-  m_histogram = (TH1F*) file->Get(m_distribution.c_str())->Clone();
-  m_histogram->SetDirectory(0);
+  if (file->GetListOfKeys()->Contains(m_distribution.c_str())){
+    m_histogram = (TH1F*) file->Get(m_distribution.c_str())->Clone();
+    m_histogram->SetDirectory(0);
+    m_histoExists = true;
+  }
+  else{
+    m_histoExists = false;
+    m_histogram = new TH1F(m_distribution.c_str(), m_distribution.c_str(), 1, 0, 1);
+    m_histogram->SetDirectory(0);
+  }
   file->Close();
 }
 
 void process::setLuminosity(float luminosity)
 {
   m_luminosity = luminosity;
-  m_histogram->Scale(m_luminosity);
+  if (m_histoExists) m_histogram->Scale(m_luminosity);
 }
 
 void process::setIsSignal(bool isSignal)
@@ -42,6 +50,11 @@ TH1F* process::getHistogram()
   return m_histogram;
 }
 
+bool process::getHasHisto()
+{
+  return m_histoExists;
+}
+
 
 
 // --- plotClass
@@ -49,12 +62,24 @@ TH1F* process::getHistogram()
 plotClass::plotClass(std::string distribution)
 {
   m_distribution = distribution;
+  std::cout<<"plotClass::plotClass: Initializing distribution "<<m_distribution<<std::endl;
 }
 
-void plotClass::setGlobalProperties(float luminosity, bool doLogScale)
+plotClass::~plotClass()
+{
+  m_sbkg->Delete();
+  m_ssig->Delete();
+  m_hbkg->Delete();
+  m_hsig->Delete();
+  m_hratio->Delete();
+
+}
+
+void plotClass::setGlobalProperties(float luminosity, bool doLogScale, bool savePlot)
 {
   m_luminosity = luminosity;
   m_doLogScale = doLogScale;
+  m_savePlot = savePlot;
 }
 
 void plotClass::setSampleNames(std::vector<std::string> bkgName, std::vector<std::string> sigName)
@@ -71,13 +96,14 @@ void plotClass::setSampleNames(std::vector<std::string> bkgName, std::vector<std
   }
 }
 
-void plotClass::setSampleProperties(std::map<std::string,std::string> address_map, std::map<std::string,bool> isSignal_map, std::map<std::string,float> scale_map, std::map<std::string,int> lineColor, std::map<std::string,int> fillColor)
+void plotClass::setSampleProperties(std::map<std::string, int> index_map, std::map<std::string,std::string> address_map, std::map<std::string,bool> isSignal_map, std::map<std::string,float> scale_map, std::map<std::string,int> lineColor, std::map<std::string,int> fillColor)
 {
-  m_address_map = address_map;
+  m_index_map   =  index_map;
+  m_address_map =  address_map;
   m_isSignal_map = isSignal_map;
-  m_scale_map = scale_map;
-  m_lineColor = lineColor;
-  m_fillColor = fillColor;
+  m_scale_map =    scale_map;
+  m_lineColor =    lineColor;
+  m_fillColor =    fillColor;
 }
 
 void plotClass::read()
@@ -99,26 +125,29 @@ void plotClass::read()
 
 void plotClass::prepareCanvas()
 {
-  m_canvas = new TCanvas(m_distribution.c_str(), m_distribution.c_str(), 700, 600); 
+  m_canvas = new TCanvas(m_distribution.c_str(), m_distribution.c_str(), 900, 600); 
 
-  m_pad1 = new TPad(Form("pad1_%s", m_distribution.c_str()), Form("pad1_%s", m_distribution.c_str()), 0, 0.305, .99, 1);
+  m_pad1 = new TPad(Form("pad1_%s", m_distribution.c_str()), Form("pad1_%s", m_distribution.c_str()), 0, 0.305, .75, 1);
   m_pad1->SetBottomMargin(0);
   m_pad1->Draw("same");
   
-  m_pad2 = new TPad(Form("pad2_%s", m_distribution.c_str()), Form("pad2_%s", m_distribution.c_str()), 0, 0.01, .99, 0.295);
+  m_pad2 = new TPad(Form("pad2_%s", m_distribution.c_str()), Form("pad2_%s", m_distribution.c_str()), 0, 0.01, .75, 0.295);
   m_pad2->SetTopMargin(0);
   m_pad2->SetBottomMargin(0.3);
   m_pad2->SetGrid(0,1);
   m_pad2->Draw("same");
+
+  m_pad3 = new TPad(Form("pad3_%s", m_distribution.c_str()), Form("pad3_%s", m_distribution.c_str()), 0.76, 0.01, .99, 1);
+  m_pad3->Draw("same");
 }
 
 void plotClass::plotUpperPad()
 {
   m_pad1->cd();
 
-  TH1F *htemp;
   //--- Define m_hbkg and m_hsig
   for (auto bkg : m_bkgName){
+    if (!m_sample_map[bkg.c_str()].getHasHisto()) continue;
     TH1F *htemp = (TH1F*) m_sample_map[bkg.c_str()].getHistogram()->Clone();
     m_hbkg = new TH1F(Form("h_bkg_%s", m_distribution.c_str()), "", htemp->GetSize()-2, htemp->GetXaxis()->GetXmin(), htemp->GetXaxis()->GetXmax());
     m_hsig = new TH1F(Form("h_sig_%s", m_distribution.c_str()), "", htemp->GetSize()-2, htemp->GetXaxis()->GetXmin(), htemp->GetXaxis()->GetXmax());
@@ -134,13 +163,16 @@ void plotClass::plotUpperPad()
   m_ssig = new THStack(Form("ssig_%s", m_distribution.c_str()), "");
 
 
+
   for (auto bkg : m_bkgName){
+    if (!m_sample_map[bkg.c_str()].getHasHisto()) continue;
     m_sbkg->Add(m_sample_map[bkg.c_str()].getHistogram());
     m_hbkg->Add(m_sample_map[bkg.c_str()].getHistogram());
     n_totalbkg += m_sample_map[bkg.c_str()].getHistogram()->Integral();
   }
 
   for (auto sig : m_sigName){
+    if (!m_sample_map[sig.c_str()].getHasHisto()) continue;
     m_ssig->Add(m_sample_map[sig.c_str()].getHistogram());
     m_hsig->Add(m_sample_map[sig.c_str()].getHistogram());
     n_totalsig += m_sample_map[sig.c_str()].getHistogram()->Integral();
@@ -201,7 +233,36 @@ void plotClass::plotLowerPad()
 
   //--- Draw ratio plot
   m_hratio->Draw();
+}
+
+void plotClass::plotSidePad()
+{
+  m_pad3->cd();
+
+  m_legend = new TLegend(0., 0.295, 1., 1.);
+  m_legend->SetTextSize(0.05);
+  m_legend->SetBorderSize(1);
+  m_legend->SetLineColor(kWhite);
+
+  for (auto bkg : m_bkgName){
+    m_legend->AddEntry(m_sample_map[bkg.c_str()].getHistogram(), bkg.c_str(), "lf");
+  }
+
+  for (auto sig : m_sigName){
+    m_legend->AddEntry(m_sample_map[sig.c_str()].getHistogram(), sig.c_str(), "l");
+  }
+
+  m_legend->Draw();
+
+}
+
+void plotClass::finalize()
+{
   m_canvas->Update();
+  if (m_savePlot){
+    m_canvas->Print(Form("plots/%s.gif", m_distribution.c_str()));
+    m_canvas->Print(Form("plots/%s.eps", m_distribution.c_str()));
+  }
 }
 
 
