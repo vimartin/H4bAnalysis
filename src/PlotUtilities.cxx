@@ -633,22 +633,31 @@ void doAllPlots(int analysis_type, std::string pass, std::map<string, TH1*> &h_1
       plot1D(Form("h_lepton_iso-%s",pass.c_str()), lepton.getIsolation(), weight, h_1d, "", 100, 0., 0.5);
       plot1D(Form("h_lepton_miniiso-%s",pass.c_str()), lepton.getMiniIsolation(), weight, h_1d, "", 100, 0., 0.5);
     }
-    plot1D(Form("h_njets-%s",pass.c_str()), selected_jets.size(), weight, h_1d, "", 10, -0.5, 9.5);
+    plot1D(Form("h_nfatjets-%s",pass.c_str()), selected_jets.size(), weight, h_1d, "", 10, -0.5, 9.5);
+    plot1D(Form("h_nfatbjets-%s",pass.c_str()), selected_bjets.size(), weight, h_1d, "", 10, -0.5, 9.5);
     plot1D(Form("h_RecoHMass-%s",pass.c_str()), findBoostedRecoHmass(selected_bjets), weight, h_1d, "", 25, 0., 250.);
     for (auto jet : selected_jets) {
-      plot1D(Form("h_jets_pt-%s",pass.c_str()), jet.jet.Pt()/1000., weight, h_1d, "", 30, 0., 300);
-      plot1D(Form("h_jets_eta-%s",pass.c_str()), jet.jet.Eta(), weight, h_1d, "", 100, -5, 5);
+      plot1D(Form("h_fatjet_pt-%s",pass.c_str()), jet.pseudoJet.perp()/1000., weight, h_1d, "", 30, 0., 300.);
+      plot1D(Form("h_fatjet_eta-%s",pass.c_str()), jet.pseudoJet.eta(), weight, h_1d, "", 100, -5., 5.);
       plot1D(Form("h_fatjet_mass-%s",pass.c_str()), jet.pseudoJet.m()/1000., weight, h_1d, "", 100, 0., 150.);
+
+      plot1D(Form("h_fatjet_mdtagged_pt-%s",pass.c_str()), jet.mdtagged_pseudoJet.perp()/1000., weight, h_1d, "", 30, 0., 300.);
+      plot1D(Form("h_fatjet_mdtagged_eta-%s",pass.c_str()), jet.mdtagged_pseudoJet.eta(), weight, h_1d, "", 100, -5., 5.);
+      plot1D(Form("h_fatjet_mdtagged_mass-%s",pass.c_str()), jet.mdtagged_pseudoJet.m()/1000., weight, h_1d, "", 100, 0., 150.);
+
+      plot1D(Form("h_fatjet_pruned_pt-%s",pass.c_str()), jet.pruned_pseudoJet.perp()/1000., weight, h_1d, "", 30, 0., 300.);
+      plot1D(Form("h_fatjet_pruned_eta-%s",pass.c_str()), jet.pruned_pseudoJet.eta(), weight, h_1d, "", 100, -5., 5.);
       plot1D(Form("h_fatjet_pruned_mass-%s",pass.c_str()), jet.pruned_pseudoJet.m()/1000., weight, h_1d, "", 100, 0., 150.);
-      plot1D(Form("h_fatjet_pt-%s",pass.c_str()), jet.pseudoJet.pt()/1000., weight, h_1d, "", 100, 0., 150.);
-      plot1D(Form("h_fatjet_pruned_pt-%s",pass.c_str()), jet.pruned_pseudoJet.pt()/1000., weight, h_1d, "", 100, 0., 150.);
-      plot1D(Form("h_nsubjet-%s",pass.c_str()), jet.subjets.size(), weight, h_1d, "", 10, -0.5, 9.5);
-      if (jet.hasSubstructure){
+
+      plot1D(Form("h_fatjet_BDRS_pt-%s",pass.c_str()), jet.filtered_pseudoJet.perp()/1000., weight, h_1d, "", 30, 0., 300.);
+      plot1D(Form("h_fatjet_BDRS_eta-%s",pass.c_str()), jet.filtered_pseudoJet.eta(), weight, h_1d, "", 100, -5., 5.);
+      plot1D(Form("h_fatjet_BDRS_mass-%s",pass.c_str()), jet.filtered_pseudoJet.m()/1000., weight, h_1d, "", 100, 0., 150.);
+      if (jet.hasMDSubstructure){
         int nbsub = 0;
         int bsub1 = -1;
         int bsub2 = -1;
-        for (int isub = 0; isub < jet.subjets_btag.size(); isub++) {
-          if (jet.subjets_btag.at(isub)) {
+        for (int isub = 0; isub < jet.mdtagged_subPseudoJets_bflag.size(); isub++) {
+          if (jet.mdtagged_subPseudoJets_bflag.at(isub)) {
             nbsub++;
             if (bsub1 < 0) {
               bsub1 = isub;
@@ -657,21 +666,97 @@ void doAllPlots(int analysis_type, std::string pass, std::map<string, TH1*> &h_1
             }
           }
         }
-        plot1D(Form("h_nbsubjet-%s",pass.c_str()), nbsub, weight, h_1d, "", 10, -0.5, 9.5);
-        plot1D(Form("h_subjet_mass_mdpieces-%s",pass.c_str()), (jet.pieces[0]+jet.pieces[1]).m()/1000., weight, h_1d, "", 100, 0., 150.);
-
-        if (jet.subjets.size() >= 2){
-          plot1D(Form("h_subjet_mass-%s",pass.c_str()), (jet.subjets[0]+jet.subjets[1]).m()/1000., weight, h_1d, "", 100, 0., 150.);
-        }
-
-        if (isBjet(jet.pieces[0]) && isBjet(jet.pieces[1])){
-          plot1D(Form("h_bsubjet_mass_mdpieces-%s",pass.c_str()), (jet.pieces[0]+jet.pieces[1]).m()/1000., weight, h_1d, "", 100, 0., 150.);
-        }
-        if (nbsub >= 2) {
-          plot1D(Form("h_bsubjet_mass-%s",pass.c_str()), (jet.subjets[bsub1]+jet.subjets[bsub2]).m()/1000., weight, h_1d, "", 100, 0., 150.);
+        plot1D(Form("h_nsubjet_mdtagged-%s",pass.c_str()), jet.mdtagged_subPseudoJets.size(), weight, h_1d, "", 10, -0.5, 9.5);
+        plot1D(Form("h_nbsubjet_mdtagged-%s",pass.c_str()), nbsub, weight, h_1d, "", 10, -0.5, 9.5);
+        if (jet.mdtagged_subPseudoJets.size() >= 2){
+          plot1D(Form("h_subjet_pieces_mass_mdtagged-%s",pass.c_str()), (jet.mdtagged_subPseudoJets.at(0)+jet.mdtagged_subPseudoJets.at(1)).m()/1000., weight, h_1d, "", 100, 0., 150.);
         }
       }
-    }
-    plot1D(Form("h_nbjets-%s",pass.c_str()), selected_bjets.size(), weight, h_1d, "", 10, -0.5, 9.5);
-  }
+
+      plot1D(Form("h_nsubjet_pruned-%s",pass.c_str()), jet.pruned_subPseudoJets.size(), weight, h_1d, "", 10, -0.5, 9.5);
+      if (jet.hasPruningSubstructure){
+        int nbsub = 0;
+        int bsub1 = -1;
+        int bsub2 = -1;
+        for (int isub = 0; isub < jet.pruned_subPseudoJets_bflag.size(); isub++) {
+          if (jet.pruned_subPseudoJets_bflag.at(isub)) {
+            nbsub++;
+            if (bsub1 < 0) {
+              bsub1 = isub;
+            } else if (bsub2 < 0) {
+              bsub2 = isub;
+            }
+          }
+        }
+        plot1D(Form("h_nsubjet_pruned-%s",pass.c_str()), jet.pruned_subPseudoJets.size(), weight, h_1d, "", 10, -0.5, 9.5);
+        plot1D(Form("h_nbsubjet_pruned-%s",pass.c_str()), nbsub, weight, h_1d, "", 10, -0.5, 9.5);
+        if (jet.pruned_subPseudoJets.size() >= 2){
+          plot1D(Form("h_subjet_pieces_mass_pruned-%s",pass.c_str()), (jet.pruned_subPseudoJets.at(0)+jet.pruned_subPseudoJets.at(1)).m()/1000., weight, h_1d, "", 100, 0., 150.);
+        }
+      }
+
+      plot1D(Form("h_nsubjet_BDRS-%s",pass.c_str()), jet.filtered_subPseudoJets.size(), weight, h_1d, "", 10, -0.5, 9.5);
+      if (jet.hasBDRSSubstructure){
+        int nbsub = 0;
+        int bsub1 = -1;
+        int bsub2 = -1;
+        for (int isub = 0; isub < jet.filtered_subPseudoJets_bflag.size(); isub++) {
+          if (jet.filtered_subPseudoJets_bflag.at(isub)) {
+            nbsub++;
+            if (bsub1 < 0) {
+              bsub1 = isub;
+            } else if (bsub2 < 0) {
+              bsub2 = isub;
+            }
+          }
+        }
+        plot1D(Form("h_nsubjet_BDRS-%s",pass.c_str()), jet.filtered_subPseudoJets.size(), weight, h_1d, "", 10, -0.5, 9.5);
+        plot1D(Form("h_nbsubjet_BDRS-%s",pass.c_str()), nbsub, weight, h_1d, "", 10, -0.5, 9.5);
+        if (jet.filtered_subPseudoJets.size() >= 2){
+          plot1D(Form("h_subjet_pieces_mass_BDRS-%s",pass.c_str()), (jet.filtered_subPseudoJets.at(0)+jet.filtered_subPseudoJets.at(1)).m()/1000., weight, h_1d, "", 100, 0., 150.);
+        }
+      }
+      plot1D(Form("h_nsubjet_trimmed-%s",pass.c_str()), jet.trimmed_subPseudoJets.size(), weight, h_1d, "", 10, -0.5, 9.5);
+      if (jet.hasTrimmingSubstructure){
+        int nbsub = 0;
+        int bsub1 = -1;
+        int bsub2 = -1;
+        for (int isub = 0; isub < jet.trimmed_subPseudoJets_bflag.size(); isub++) {
+          if (jet.trimmed_subPseudoJets_bflag.at(isub)) {
+            nbsub++;
+            if (bsub1 < 0) {
+              bsub1 = isub;
+            } else if (bsub2 < 0) {
+              bsub2 = isub;
+            }
+          }
+        }
+        plot1D(Form("h_nsubjet_trimmed-%s",pass.c_str()), jet.trimmed_subPseudoJets.size(), weight, h_1d, "", 10, -0.5, 9.5);
+        plot1D(Form("h_nbsubjet_trimmed-%s",pass.c_str()), nbsub, weight, h_1d, "", 10, -0.5, 9.5);
+        if (jet.trimmed_subPseudoJets.size() >= 2){
+          plot1D(Form("h_subjet_pieces_mass_trimmed-%s",pass.c_str()), (jet.trimmed_subPseudoJets.at(0)+jet.trimmed_subPseudoJets.at(1)).m()/1000., weight, h_1d, "", 100, 0., 150.);
+        }
+      }
+      if (jet.hasMatchedSubstructure){
+        int nbsub = 0;
+        int bsub1 = -1;
+        int bsub2 = -1;
+        for (int isub = 0; isub < jet.matched_subPseudoJets_bflag.size(); isub++) {
+          if (jet.matched_subPseudoJets_bflag.at(isub)) {
+            nbsub++;
+            if (bsub1 < 0) {
+              bsub1 = isub;
+            } else if (bsub2 < 0) {
+              bsub2 = isub;
+            }
+          }
+        }
+        plot1D(Form("h_nsubjet_matched-%s",pass.c_str()), jet.matched_subPseudoJets.size(), weight, h_1d, "", 10, -0.5, 9.5);
+        plot1D(Form("h_nbsubjet_matched-%s",pass.c_str()), nbsub, weight, h_1d, "", 10, -0.5, 9.5);
+        if (jet.matched_subPseudoJets.size() >= 2){
+          plot1D(Form("h_subjet_pieces_mass_matched-%s",pass.c_str()), (jet.matched_subPseudoJets.at(0)+jet.matched_subPseudoJets.at(1)).m()/1000., weight, h_1d, "", 100, 0., 150.);
+        }
+      }
+    } // end jets
+  } // end type 1
 }

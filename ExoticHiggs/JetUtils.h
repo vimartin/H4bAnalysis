@@ -26,16 +26,33 @@ class particleJet {
   particleJet();
 
   TLorentzVector jet;
-  fastjet::PseudoJet pseudoJet;  
+  fastjet::PseudoJet pseudoJet;
   bool isBjet;
   int nBpartons;
   
   // Subjet information
-  bool hasSubstructure;
+  bool hasMDSubstructure;
+  bool hasPruningSubstructure;
+  bool hasBDRSSubstructure;
+  bool hasTrimmingSubstructure;
+  bool hasMatchedSubstructure;
+
+  fastjet::PseudoJet mdtagged_pseudoJet;
   fastjet::PseudoJet pruned_pseudoJet;
-  std::vector<fastjet::PseudoJet> pieces;
-  std::vector<fastjet::PseudoJet> subjets;
-  std::vector<int> subjets_btag;
+  fastjet::PseudoJet filtered_pseudoJet;
+  fastjet::PseudoJet trimmed_pseudoJet;
+
+  std::vector<fastjet::PseudoJet> mdtagged_subPseudoJets;
+  std::vector<fastjet::PseudoJet> pruned_subPseudoJets;
+  std::vector<fastjet::PseudoJet> filtered_subPseudoJets;
+  std::vector<fastjet::PseudoJet> trimmed_subPseudoJets;
+  std::vector<fastjet::PseudoJet> matched_subPseudoJets;
+
+  std::vector<int> mdtagged_subPseudoJets_bflag;
+  std::vector<int> pruned_subPseudoJets_bflag;
+  std::vector<int> filtered_subPseudoJets_bflag;
+  std::vector<int> trimmed_subPseudoJets_bflag;
+  std::vector<int> matched_subPseudoJets_bflag;
   
   std::vector<GenParticle_p5*> parton;
 };

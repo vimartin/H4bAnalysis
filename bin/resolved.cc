@@ -43,7 +43,13 @@ int main(int argc, char** argv){
     cout << "resolved.exe [configFile]" << endl;
     return 0;
   }
-  INIReader reader(argv[1]);
+  INIReader reader("JOs/resolved_analysis.cfg");
+  if (reader.ParseError() < 0) {
+    std::cout << "Can't load JOs/resolved_analysis.cfg" << endl;
+    return 1;
+  }
+
+  INIReader reader_sample(argv[1]);
   if (reader.ParseError() < 0) {
     std::cout << "Can't load " << argv[1] << endl;
     return 1;
@@ -69,11 +75,11 @@ int main(int argc, char** argv){
   bool use_only_charged = reader.GetBoolean("jet", "use_only_charged", false);
 
   // files
-  std::string dataFileName = reader.Get("io", "data_file_name", "UNKNOWN");
-  std::string outputFileName = reader.Get("io", "result_file_name", "UNKNOWN");
-  bool isSignal = reader.GetBoolean("io", "isSignal", false);
-  bool isPythia6 = reader.GetBoolean("io", "isPythia6", false);
-  bool isSherpa = reader.GetBoolean("io", "isSherpa", false);
+  std::string dataFileName = reader_sample.Get("io", "data_file_name", "UNKNOWN");
+  std::string outputFileName = Form("resolved_%s", reader_sample.Get("io", "result_file_name", "UNKNOWN").c_str());
+  bool isSignal = reader_sample.GetBoolean("io", "isSignal", false);
+  bool isPythia6 = reader_sample.GetBoolean("io", "isPythia6", false);
+  bool isSherpa = reader_sample.GetBoolean("io", "isSherpa", false);
 
   // Used for the track jets
   TDatabasePDG *db= TDatabasePDG::Instance();
@@ -120,7 +126,7 @@ int main(int argc, char** argv){
 
   // Cross section and weights
   double mc_weight = 1.;
-  double xsec = reader.GetReal("eventInfo", "crossSection", 1.);
+  double xsec = reader_sample.GetReal("eventInfo", "crossSection", 1.);
 
   // Loop on events
   for (Long64_t ievt=0; ievt<nentries; ievt++) {
