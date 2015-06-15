@@ -69,4 +69,6 @@ std::ostream& operator<<(std::ostream& os, const particleJet jet);
 std::ostream& operator<<(std::ostream& os, const GenParticle_p5 parton);
 std::ostream& operator<<(std::ostream& ostr, const fastjet::PseudoJet& jet);
 
+int number_fatjets(std::vector<particleJet> selected_jets_fat, std::string type, float pt_thres, float eta_thres);
+
 #endif /*JETUTILS_H*/

@@ -67,6 +67,33 @@ bool isJetMatchedToB(fastjet::PseudoJet jet, std::vector<GenParticle_p5>& partLi
   return false;
 }
 
+int number_fatjets(std::vector<particleJet> selected_jets_fat, std::string type, float pt_thres, float eta_thres){
+  int nfatjets = 0;
+  for (auto jet : selected_jets_fat){
+    if(type.find(std::string("mdtagged")) != std::string::npos){
+      if (jet.mdtagged_pseudoJet.perp()>pt_thres && fabs(jet.mdtagged_pseudoJet.eta())<eta_thres){
+        nfatjets++;
+      }
+    }
+    else if(type.find(std::string("pruned")) != std::string::npos){
+      if (jet.pruned_pseudoJet.perp()>pt_thres && fabs(jet.pruned_pseudoJet.eta())<eta_thres){
+        nfatjets++;
+      }
+    }
+    else if(type.find(std::string("filtered")) != std::string::npos){
+      if (jet.filtered_pseudoJet.perp()>pt_thres && fabs(jet.filtered_pseudoJet.eta())<eta_thres){
+        nfatjets++;
+      }
+    }
+    else if(type.find(std::string("trimmed")) != std::string::npos){
+      if (jet.trimmed_pseudoJet.perp()>pt_thres && fabs(jet.trimmed_pseudoJet.eta())<eta_thres){
+        nfatjets++;
+      }
+    }
+  }
+  return nfatjets;
+}
+
 std::vector<int> findPartonHadrons(int parton, std::vector<GenParticle_p5>& partList)
 {
 

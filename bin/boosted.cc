@@ -78,22 +78,35 @@ int main(int argc, char** argv){
 
   // MD tagger
   bool doMDtagger = reader.GetBoolean("mdtagger", "doMDtagger", true);
+  double R_mdtagger = reader.GetReal("mdtagger", "R", 0.4);
+  fastjet::JetDefinition sub_jet_def_mdtagged(fastjet::cambridge_algorithm, R_mdtagger);
   double mu_thr = reader.GetReal("mdtagger", "mu_thr", 0.667);
   double y_thr = reader.GetReal("mdtagger", "y_thr", 0.09);    
 
   // Prunning
   bool doPrunning = reader.GetBoolean("prunning", "doPrunning", false);
+  double R_pruning = reader.GetReal("prunning", "R", 0.4);
+  fastjet::JetDefinition sub_jet_def_pruned(fastjet::cambridge_algorithm, R_pruning);
   double zcut = reader.GetReal("prunning", "zcut", 0.1);
   double rcut_factor = reader.GetReal("prunning", "rcut_factor", 0.5);
 
   // BDRS
   bool doBDRS = reader.GetBoolean("BDRS", "doBDRS", false);
+  double R_BDRS = reader.GetReal("BDRS", "R", 0.4);
+  fastjet::JetDefinition sub_jet_def_BDRS(fastjet::cambridge_algorithm, R_BDRS);
 
   // Trimming
   bool doTrimming = reader.GetBoolean("trimming", "doTrimming", false);
   double ptfrac_trim = reader.GetReal("trimming", "ptfrac", 0.05);
-  double r_trim = reader.GetReal("trimming", "r", 0.2);
+  double R_trim = reader.GetReal("trimming", "R", 0.2);
+  fastjet::JetDefinition sub_jet_def_trimmed(fastjet::kt_algorithm, R_trim);
 
+  // Sub jet definition
+  double R_matched = reader.GetReal("subjet", "R", 0.4);
+  fastjet::JetDefinition sub_jet_def_matched(fastjet::antikt_algorithm, R_matched);
+  double sub_jet_ptmin = reader.GetReal("subjet", "ptmin", 5000.0);
+  bool use_only_charged = reader.GetBoolean("subjet", "use_only_charged", false);
+  bool doFatMatching = reader.GetBoolean("subjet", "doFatMatching", true);
   
   // Lepton selection
   double lep_ptmin = reader.GetReal("lepton", "lep_ptmin", 26000.0);
@@ -102,13 +115,6 @@ int main(int argc, char** argv){
 
   // Ghost factor for truth-level B-jet tagging
   double ghost_factor = reader.GetReal("btagging", "ghost_factor", 1.e-21);
-
-  // Sub jet definition
-  double sub_R = reader.GetReal("subjet", "R", 0.4);
-  fastjet::JetDefinition sub_jet_def(fastjet::antikt_algorithm, sub_R);
-  double sub_jet_ptmin = reader.GetReal("subjet", "ptmin", 5000.0);
-  bool use_only_charged = reader.GetBoolean("subjet", "use_only_charged", false);
-  bool doFatMatching = reader.GetBoolean("subjet", "doFatMatching", true);
 
   // files
   std::string dataFileName = reader_sample.Get("io", "data_file_name", "UNKNOWN");
@@ -330,7 +336,7 @@ int main(int argc, char** argv){
     }
 
     // cluster the small jets
-    fastjet::ClusterSequence sub_clust_seq(input_particles_sub, sub_jet_def);    
+    fastjet::ClusterSequence sub_clust_seq(input_particles_sub, sub_jet_def_matched);    
     vector<fastjet::PseudoJet> inclusive_jets_sub = sorted_by_pt(sub_clust_seq.inclusive_jets(sub_jet_ptmin));
 
     // small jet reconstruction
@@ -365,7 +371,7 @@ int main(int argc, char** argv){
     // define grooming algorithms
     fastjet::MassDropTagger md_tagger(mu_thr, y_thr);
     fastjet::Pruner pruner(fastjet::cambridge_algorithm, zcut, rcut_factor);
-    fastjet::Filter trimmer(fastjet::JetDefinition(fastjet::kt_algorithm, r_trim), fastjet::SelectorPtFractionMin(ptfrac_trim));
+    fastjet::Filter trimmer(fastjet::JetDefinition(fastjet::kt_algorithm, R_trim), fastjet::SelectorPtFractionMin(ptfrac_trim));
 
     // fat jet reconstruction
     for (auto jet : inclusive_jets_fat) {
@@ -392,13 +398,15 @@ int main(int argc, char** argv){
       partJet.hasMDSubstructure = false;
       fastjet::PseudoJet mdtagged = md_tagger(jet);
       if (!(mdtagged == 0)) {
-        partJet.mdtagged_pseudoJet = mdtagged; // copy cleaned jet
+        if (mdtagged.perp()>jet_ptmin && fabs(mdtagged.eta())<jet_etamax){
+          partJet.mdtagged_pseudoJet = mdtagged; // copy cleaned jet
 
-        partJet.hasMDSubstructure = true;
-        fastjet::ClusterSequence mdtagged_clust_seq(partJet.mdtagged_pseudoJet.constituents(), sub_jet_def); // recluster constituents
-        partJet.mdtagged_subPseudoJets = sorted_by_pt(mdtagged_clust_seq.inclusive_jets(sub_jet_ptmin)); // sort them and storesubjets
-        for (auto j : partJet.mdtagged_subPseudoJets){
-          partJet.mdtagged_subPseudoJets_bflag.push_back((int) isBjet(j)); // flag as b-subjets
+          partJet.hasMDSubstructure = true;
+          fastjet::ClusterSequence mdtagged_clust_seq(partJet.mdtagged_pseudoJet.constituents(), sub_jet_def_mdtagged); // recluster constituents
+          partJet.mdtagged_subPseudoJets = sorted_by_pt(mdtagged_clust_seq.inclusive_jets(sub_jet_ptmin)); // sort them and storesubjets
+          for (auto j : partJet.mdtagged_subPseudoJets){
+            partJet.mdtagged_subPseudoJets_bflag.push_back((int) isBjet(j)); // flag as b-subjets
+          }
         }
       }
 
@@ -407,13 +415,15 @@ int main(int argc, char** argv){
       fastjet::PseudoJet pruned_jet;
       pruned_jet= pruner(jet);
       if (!(pruned_jet == 0)) {
-        partJet.pruned_pseudoJet = pruned_jet;
+        if (pruned_jet.perp()>jet_ptmin && fabs(pruned_jet.eta())<jet_etamax){
+          partJet.pruned_pseudoJet = pruned_jet;
 
-        partJet.hasPruningSubstructure = true;
-        fastjet::ClusterSequence Pruning_clust_seq(partJet.pruned_pseudoJet.constituents(), sub_jet_def); // recluster constituents
-        partJet.pruned_subPseudoJets = sorted_by_pt(Pruning_clust_seq.inclusive_jets(sub_jet_ptmin)); // sort them and storesubjets
-        for (auto j : partJet.pruned_subPseudoJets){
-          partJet.pruned_subPseudoJets_bflag.push_back(isBjet(j));
+          partJet.hasPruningSubstructure = true;
+          fastjet::ClusterSequence Pruning_clust_seq(partJet.pruned_pseudoJet.constituents(), sub_jet_def_pruned); // recluster constituents
+          partJet.pruned_subPseudoJets = sorted_by_pt(Pruning_clust_seq.inclusive_jets(sub_jet_ptmin)); // sort them and storesubjets
+          for (auto j : partJet.pruned_subPseudoJets){
+            partJet.pruned_subPseudoJets_bflag.push_back(isBjet(j));
+          }
         }
       }
 
@@ -421,16 +431,21 @@ int main(int argc, char** argv){
       partJet.hasBDRSSubstructure = false;
       fastjet::PseudoJet mdtagged_BDRS = md_tagger(jet);
       if (!(mdtagged_BDRS == 0)) {
-        std::vector<fastjet::PseudoJet> mdtagged_BDRS_pieces = mdtagged_BDRS.pieces();
-        double Rfilt = min(0.3, 0.5*mdtagged_BDRS_pieces.at(0).delta_R(mdtagged_BDRS_pieces.at(1)));
-        partJet.filtered_pseudoJet = fastjet::Filter(Rfilt, fastjet::SelectorNHardest(3))(mdtagged); 
-        partJet.filtered_pseudoJet.set_user_index(jet.user_index());
+        if (mdtagged_BDRS.perp()>jet_ptmin && fabs(mdtagged_BDRS.eta())<jet_etamax){
+          std::vector<fastjet::PseudoJet> mdtagged_BDRS_pieces = mdtagged_BDRS.pieces();
+          double Rfilt = min(0.3, 0.5*mdtagged_BDRS_pieces.at(0).delta_R(mdtagged_BDRS_pieces.at(1)));
+          fastjet::PseudoJet filtered = fastjet::Filter(Rfilt, fastjet::SelectorNHardest(3))(mdtagged_BDRS);
+          if (filtered.perp()>jet_ptmin && fabs(filtered.eta())<jet_etamax){
+            partJet.filtered_pseudoJet = filtered; 
+            partJet.filtered_pseudoJet.set_user_index(jet.user_index());
 
-        partJet.hasBDRSSubstructure = true;
-        fastjet::ClusterSequence BDRS_clust_seq(partJet.filtered_pseudoJet.constituents(), sub_jet_def); // recluster constituents
-        partJet.filtered_subPseudoJets = sorted_by_pt(BDRS_clust_seq.inclusive_jets(sub_jet_ptmin)); // sort them and storesubjets
-        for (auto j : partJet.filtered_subPseudoJets){
-          partJet.filtered_subPseudoJets_bflag.push_back((int) isBjet(j)); // flag as b-subjets
+            partJet.hasBDRSSubstructure = true;
+            fastjet::ClusterSequence BDRS_clust_seq(partJet.filtered_pseudoJet.constituents(), sub_jet_def_BDRS); // recluster constituents
+            partJet.filtered_subPseudoJets = sorted_by_pt(BDRS_clust_seq.inclusive_jets(sub_jet_ptmin)); // sort them and storesubjets
+            for (auto j : partJet.filtered_subPseudoJets){
+              partJet.filtered_subPseudoJets_bflag.push_back((int) isBjet(j)); // flag as b-subjets
+            }
+          }
         }
       }
 
@@ -439,13 +454,15 @@ int main(int argc, char** argv){
       fastjet::PseudoJet trimmed_jet;
       trimmed_jet= trimmer(jet);
       if (!(trimmed_jet == 0)) {
-        partJet.trimmed_pseudoJet = trimmed_jet;
+        if (trimmed_jet.perp()>jet_ptmin && fabs(trimmed_jet.eta())<jet_etamax){
+          partJet.trimmed_pseudoJet = trimmed_jet;
 
-        partJet.hasTrimmingSubstructure = true;
-        fastjet::ClusterSequence trimmed_clust_seq(partJet.trimmed_pseudoJet.constituents(), sub_jet_def); // recluster constituents
-        partJet.trimmed_subPseudoJets = sorted_by_pt(trimmed_clust_seq.inclusive_jets(sub_jet_ptmin)); // sort them and storesubjets
-        for (auto j : partJet.trimmed_subPseudoJets){
-          partJet.trimmed_subPseudoJets_bflag.push_back(isBjet(j));
+          partJet.hasTrimmingSubstructure = true;
+          fastjet::ClusterSequence trimmed_clust_seq(partJet.trimmed_pseudoJet.constituents(), sub_jet_def_trimmed); // recluster constituents
+          partJet.trimmed_subPseudoJets = sorted_by_pt(trimmed_clust_seq.inclusive_jets(sub_jet_ptmin)); // sort them and storesubjets
+          for (auto j : partJet.trimmed_subPseudoJets){
+            partJet.trimmed_subPseudoJets_bflag.push_back(isBjet(j));
+          }
         }
       }
 
@@ -653,7 +670,12 @@ int main(int argc, char** argv){
     doAllPlots(1, pass, h_1d, h_2d, selected_jets_fat, selected_bjets_fat, selected_lepton, mc_weight*xsec/nentries);
 
     //--- Pass lepton + fat jets requirements
-    selected_jets_fat.size()>=2  ? pass=Form("%s-passJets", pass.c_str()) : pass=Form("%s-failJets", pass.c_str());
+    int nfatjets = selected_jets_fat.size();
+    if (doMDtagger) nfatjets = number_fatjets(selected_jets_fat, "mdtagged", jet_ptmin, jet_etamax);
+    if (doPrunning) nfatjets = number_fatjets(selected_jets_fat, "pruned", jet_ptmin, jet_etamax);
+    if (doBDRS) nfatjets = number_fatjets(selected_jets_fat, "filtered", jet_ptmin, jet_etamax);
+    if (doTrimming) nfatjets = number_fatjets(selected_jets_fat, "trimmed", jet_ptmin, jet_etamax);
+    nfatjets>=2  ? pass=Form("%s-passJets", pass.c_str()) : pass=Form("%s-failJets", pass.c_str());
     if (pass.find(std::string("passLepton-passJets")) != std::string::npos){
       plot1D_cutflow("cutflow", 5, h_1d, "Cut flow", cutflow_bin_title);
     }
