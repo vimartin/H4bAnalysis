@@ -247,6 +247,20 @@ TLorentzVector findDressedLepton(std::vector<GenParticle_p5>& partList, bool isP
   return dressed_lepton;
 }
 
+std::vector<int> finalStateMuons(std::vector<GenParticle_p5>& partList, bool isSherpa, bool isPythia6)
+{
+  int index = -1;
+  std::vector<int> index_vec;
+
+  for (auto part : partList) {
+    index ++;
+    if (abs(part.m_pdgId)==13 && part.m_status==1){
+      index_vec.push_back(index);
+    }
+  }
+  return index_vec;
+}
+
 
 double LeptonIsolation(fastjet::PseudoJet& lepton, std::vector<fastjet::PseudoJet>& jetList, double Rmin, double Rmax)
 {

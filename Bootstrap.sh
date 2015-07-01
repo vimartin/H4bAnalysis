@@ -16,8 +16,9 @@ make install
 
 # Prepare and install the code
 cd $WORKDIR
-mkdir results/
-mkdir data/
+mkdir -p results/
+mkdir -p data/
+mkdir -p plots/
 scp -r caminal@lxplus.cern.ch:/afs/cern.ch/work/c/caminal/public/ToVerena/data/* data/.
 
 make clean

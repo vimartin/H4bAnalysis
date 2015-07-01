@@ -5,6 +5,7 @@
 #include "generator/McEventCollection_p5.h"
 #include "generator/GenParticle_p5.h"
 #include "generator/GenEvent_p5.h"
+#include "generator/GenVertex_p5.h"
 
 #include "inih/INIReader.h"
 
@@ -135,6 +136,14 @@ int main(int argc, char** argv){
     CollectionTree->GetEntry(ievt);
 
     // Extract weight
+//    std::cout<<"============"<<std::endl;
+//    std::cout<<event->m_genEvents.size()<<std::endl;
+//    std::cout<<event->m_genVertices.size()<<std::endl;
+//    int counter=0;
+//    for (auto p : event->m_genParticles)
+//      if (p.m_status==1) counter+=1;
+//    std::cout<<counter<<std::endl;
+
     for (auto ev : event->m_genEvents){
       ev.m_weights.at(0)>0. ? mc_weight=1. : mc_weight=-1.;
       break;
@@ -370,6 +379,7 @@ int main(int argc, char** argv){
         selected_bjets.push_back(jet);
       }
     } 
+
 
     // =========
     // P L O T S

@@ -158,7 +158,7 @@ double findMinDeltaR(std::vector<particleJet>){
 double findResolvedRecoHmass(std::vector<particleJet> selected_bjets){
   double recoHmass = -9999;
   TLorentzVector H_tlv;
-  if (selected_bjets.size()==4){
+  if (selected_bjets.size()>=3){
     for (auto bjet : selected_bjets){
      H_tlv += bjet.jet; 
     }

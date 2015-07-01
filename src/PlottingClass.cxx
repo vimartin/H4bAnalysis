@@ -286,12 +286,13 @@ void plotClass::finalize()
 void plotClass::printSummary()
 {
   std::cout<<"\n\n"<<std::endl;
-  std::cout<<"=== S U M A R Y ==="<<std::endl;
-  std::cout<<"Total Background : "<<m_hbkg->Integral()<<std::endl;
-  std::cout<<"Signal           : "<<m_hsig->Integral()<<std::endl;
-  std::cout<<"S / B            : "<<m_hsig->Integral()/m_hbkg->Integral()<<std::endl;
-  std::cout<<"S / sqrt(B)      : "<<m_hsig->Integral()/sqrt(m_hbkg->Integral())<<std::endl;
-  std::cout<<"==================="<<std::endl;
+  std::cout<<"============== S U M A R Y ==============="<<std::endl;
+  std::cout<<"Total Background               : "<<m_hbkg->Integral()<<std::endl;
+  std::cout<<"Signal                         : "<<m_hsig->Integral()<<std::endl;
+  std::cout<<"S / B                          : "<<m_hsig->Integral()/m_hbkg->Integral()<<std::endl;
+  std::cout<<"S / sqrt(B)                    : "<<m_hsig->Integral()/sqrt(m_hbkg->Integral())<<std::endl;
+  std::cout<<"S / sqrt( B + (0.35*B)^2 )     : "<<m_hsig->Integral()/sqrt(m_hbkg->Integral() + pow(0.35*m_hbkg->Integral(), 2) )<<std::endl;
+  std::cout<<"=========================================="<<std::endl;
   std::cout<<"\n\n"<<std::endl;
 }
 

@@ -79,7 +79,7 @@ int main(int argc, char** argv){
   // MD tagger
   bool doMDtagger = reader.GetBoolean("mdtagger", "doMDtagger", true);
   double R_mdtagger = reader.GetReal("mdtagger", "R", 0.4);
-  fastjet::JetDefinition sub_jet_def_mdtagged(fastjet::cambridge_algorithm, R_mdtagger);
+  fastjet::JetDefinition sub_jet_def_mdtagged(fastjet::antikt_algorithm, R_mdtagger);
   double mu_thr = reader.GetReal("mdtagger", "mu_thr", 0.667);
   double y_thr = reader.GetReal("mdtagger", "y_thr", 0.09);    
 
