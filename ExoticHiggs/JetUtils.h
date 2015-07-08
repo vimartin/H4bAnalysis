@@ -13,6 +13,7 @@
 
 std::vector<int> findPartonHadrons(int parton, std::vector<GenParticle_p5>& partList);
 std::vector< std::vector<int> > findBHdecays(std::vector<GenParticle_p5>& partList);
+std::vector< std::vector<int> > findMuHdecays(std::vector<GenParticle_p5>& partList);
 bool isBhadron(int pdgId);
 bool isBjet(const fastjet::PseudoJet& jet);
 int nBpartonInBjet(const fastjet::PseudoJet& jet);

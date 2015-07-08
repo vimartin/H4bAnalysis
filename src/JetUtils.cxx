@@ -149,6 +149,42 @@ std::vector< std::vector<int> > findBHdecays(std::vector<GenParticle_p5>& partLi
   return retval;
 }    
 
+
+std::vector< std::vector<int> > findMuHdecays(std::vector<GenParticle_p5>& partList)
+{
+
+  int index = -1;
+  int prodVtx1 = 1;
+  int prodVtx2 = 1;
+  std::vector<int> vec1;
+  std::vector<int> vec2;
+  std::vector<std::vector<int>> retval;
+  for (auto part : partList) {
+    index++;
+    if ((abs(part.m_pdgId) == 36) && part.m_status == 22) {
+      if (prodVtx1 > 0)
+        prodVtx1 = part.m_endVtx;
+      else
+        prodVtx2 = part.m_endVtx;
+    }
+    if ((abs(part.m_pdgId) == 36) && part.m_prodVtx == prodVtx1) {
+      prodVtx1 = part.m_endVtx;
+    }
+    if ((abs(part.m_pdgId) == 36) && part.m_prodVtx == prodVtx2) {
+      prodVtx2 = part.m_endVtx;
+    }
+    if (abs(part.m_pdgId) == 13 && part.m_prodVtx == prodVtx1) {
+      vec1.push_back(index);
+    }
+    if (abs(part.m_pdgId) == 13 && part.m_prodVtx == prodVtx2) {
+      vec2.push_back(index);
+    }
+  }
+  retval.push_back(vec1);
+  retval.push_back(vec2);
+  return retval;
+}    
+
 double findMinDeltaR(std::vector<particleJet>){
   double minDR = 1000.;
 

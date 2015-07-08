@@ -130,7 +130,7 @@ void plotClass::prepareCanvas()
   m_pad1 = new TPad(Form("pad1_%s", m_distribution.c_str()), Form("pad1_%s", m_distribution.c_str()), 0, 0.305, .75, 1);
   m_pad1->SetBottomMargin(0);
   m_pad1->Draw("same");
-  
+
   m_pad2 = new TPad(Form("pad2_%s", m_distribution.c_str()), Form("pad2_%s", m_distribution.c_str()), 0, 0.01, .75, 0.295);
   m_pad2->SetTopMargin(0);
   m_pad2->SetBottomMargin(0.3);
@@ -298,6 +298,7 @@ void plotClass::printSummary()
 
 
 
+
 //--- Other functions
 
 std::vector<std::string> convertStringToVector(std::string s)
@@ -377,4 +378,36 @@ void plotStyle()
   atlasStyle->SetPadTickY(1);
 
   gROOT->SetStyle("Plain");
+}
+
+
+void ATLASLabel(float x, float y, std::string text, float luminosity, int color){
+  TLatex *l = new TLatex();
+  l->SetNDC();
+  l->SetTextFont(72);
+  l->SetTextSize(0.04);
+  l->SetTextColor(color);
+  l->DrawLatex(x,y,"ATLAS Simulation");
+  l->DrawLatex(x+0.03,y-0.07,"Internal");
+
+  TLatex *intText = new TLatex();
+  intText->SetNDC();
+  intText->SetTextFont(42);
+  intText->SetTextSize(0.035);
+//  intText->DrawLatex(x, y-0.1, "#int");
+
+  TLatex *lumi = new TLatex();
+  lumi->SetNDC();
+  lumi->SetTextFont(42);
+  lumi->SetTextSize(0.05);
+//  lumi->DrawLatex(x+0.02, y-0.1, Form("Ldt = %.1f fb^{-1}, #sqrt{s} = 13 TeV", luminosity/1000.));
+
+  float delx = 0.090*696*gPad->GetWh()/(472*gPad->GetWw());
+  if (text!=""){
+    TLatex *p = new TLatex();
+    p->SetNDC();
+    p->SetTextFont(42);
+    p->SetTextColor(color);
+    p->DrawLatex(x+delx+0.0,y,text.c_str());
+  }
 }

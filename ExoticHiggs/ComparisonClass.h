@@ -14,46 +14,22 @@
 #include "THStack.h"
 #include "TLatex.h"
 
-#ifndef PLOTTINGCLASS_H
-#define PLOTTINGCLASS_H
-
-class process {
-
-  public:
-
-    process();
-    void setDistribution(std::string fileName, std::string distribution);
-    void setLuminosity(float luminosity);
-    void setIsSignal(bool isSignal);
-    void setProperties(float scale, int lineColor, int fillColor);
-
-    TH1F* getHistogram();
-    bool getHasHisto();
+#ifndef COMPARISONCLASS_H
+#define COMPARISONCLASS_H
 
 
-  private:
-    bool m_histoExists;
-    TH1F *m_histogram;
-    bool m_isSignal;
-    float m_luminosity;
-    std::string m_distribution;
-};
-
-
-
-class plotClass {
+class comparisonClass {
 
   public:
-    plotClass(std::string);
-    ~plotClass();
-    void setSampleNames(std::vector<std::string>, std::vector<std::string>);
+    comparisonClass(std::string);
+    ~comparisonClass();
+    void setSampleNames(std::vector<std::string>); //--- vector with the strings of all the samples to compare
     void setGlobalProperties(float luminosity, bool doLogScale, bool savePlot);
     void setSampleProperties(std::map<std::string, int> index_map, std::map<std::string,std::string> address_map, std::map<std::string,bool> isSignal_map, std::map<std::string,float> scale_map, std::map<std::string,int> lineColor, std::map<std::string,int> fillColor);
+    void setSamplesAndHistoTitles(std::string histoXTitle, std::vector<std::string> sampleTitles);
     void read();
     void prepareCanvas();
     void plotUpperPad();
-    void plotLowerPad();
-    void plotSidePad();
     void finalize();
     void printSummary();
 
@@ -61,19 +37,12 @@ class plotClass {
     std::string m_distribution;
 
     std::map<std::string, process> m_sample_map;
-    std::vector<std::string> m_bkgName;
-    std::vector<std::string> m_sigName;
+    std::vector<std::string> m_sampleNames;
 
     TCanvas *m_canvas;
     TPad *m_pad1;
-    TPad *m_pad2;
-    TPad *m_pad3;
 
-    THStack *m_sbkg;
-    THStack *m_ssig;
-    TH1F *m_hbkg;
-    TH1F *m_hsig;
-    TH1F *m_hratio;
+    std::vector< TH1F* > m_hsamples;
     TLegend *m_legend;
 
     float m_luminosity;
@@ -85,12 +54,9 @@ class plotClass {
     std::map<std::string, float>       m_scale_map;
     std::map<std::string, int>         m_lineColor;
     std::map<std::string, int>         m_fillColor;
+
+    std::string m_histoXTitle;
+    std::vector<std::string> m_sampleTitles;
 };
-
-
-
-std::vector<std::string> convertStringToVector(std::string);
-void plotStyle();
-void ATLASLabel(float x, float y, std::string text, float luminosity, int color);
 
 #endif
