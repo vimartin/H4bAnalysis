@@ -141,15 +141,15 @@ void comparisonClass::plotUpperPad()
   gPad->Modified(); gPad->Update();
 
 
-//  //--- Legend
-//  m_legend = new TLegend(0.5, 0.6, 0.90, 0.90);
-//  m_legend->SetBorderSize(1);
-//  m_legend->SetLineColor(kWhite);
-//  for (unsigned int i=0; i<m_sampleNames.size(); i++){
-//    m_legend->AddEntry(m_sample_map[m_sampleNames.at(i).c_str()].getHistogram(), Form("%s", m_sampleTitles.at(i).c_str()), "l");
-//  }
-//
-//  m_legend->Draw();
+  //--- Legend
+  m_legend = new TLegend(0.5, 0.6, 0.90, 0.90);
+  m_legend->SetBorderSize(1);
+  m_legend->SetLineColor(kWhite);
+  for (unsigned int i=0; i<m_sampleNames.size(); i++){
+    m_legend->AddEntry(m_sample_map[m_sampleNames.at(i).c_str()].getHistogram(), Form("%s", m_sampleTitles.at(i).c_str()), "l");
+  }
+
+  m_legend->Draw();
 
   TLatex *l = new TLatex();
   l->SetNDC();

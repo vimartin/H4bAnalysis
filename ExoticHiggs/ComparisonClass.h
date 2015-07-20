@@ -26,7 +26,7 @@ class comparisonClass {
     void setSampleNames(std::vector<std::string>); //--- vector with the strings of all the samples to compare
     void setGlobalProperties(float luminosity, bool doLogScale, bool savePlot);
     void setSampleProperties(std::map<std::string, int> index_map, std::map<std::string,std::string> address_map, std::map<std::string,bool> isSignal_map, std::map<std::string,float> scale_map, std::map<std::string,int> lineColor, std::map<std::string,int> fillColor);
-    void setSamplesAndHistoTitles(std::string histoXTitle, std::vector<std::string> sampleTitles);
+    void setSamplesAndHistoTitles(std::string histoXTitle, std::string histoYTitle, std::vector<std::string> sampleTitles);
     void read();
     void prepareCanvas();
     void plotUpperPad();
@@ -56,6 +56,7 @@ class comparisonClass {
     std::map<std::string, int>         m_fillColor;
 
     std::string m_histoXTitle;
+    std::string m_histoYTitle;
     std::vector<std::string> m_sampleTitles;
 };
 
