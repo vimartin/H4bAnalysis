@@ -262,7 +262,9 @@ int main(int argc, char** argv){
         lepton.dressLepton(event->m_genParticles, isPythia6, 0.1);
 
         pre_selected_lepton.push_back(lepton);
-        plot1D("h_lepton_preselected_pt", partvec.Pt()/1000., 1., h_1d, "pre-selected lepton pT", 100, 0, 150);
+//        if (partvec.Pt()>40000){
+        plot1D("h_lepton_preselected_pt", partvec.Pt()/1000., 1., h_1d, "pre-selected lepton pT", 30, 0, 150);
+//        }
         plot1D("h_lepton_preselected_eta", partvec.Eta(), 1., h_1d, "pre-selected lepton eta", 100, -5, 5);
         continue;
       }

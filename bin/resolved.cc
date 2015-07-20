@@ -422,8 +422,6 @@ int main(int argc, char** argv){
 
   } // end loop entries
 
-
-
   cout << "---- REPORT ----" << endl;
   cout << "Acceptance 3j-3b: " << endl << "   " << 100*h_1d["cutflow"]->GetBinContent(8)/h_1d["cutflow"]->GetBinContent(1) << "%" << endl;
   cout << "Acceptance 4j-3b: " << endl << "   " << 100*h_1d["cutflow"]->GetBinContent(9)/h_1d["cutflow"]->GetBinContent(1) << "%" << endl;

@@ -43,9 +43,10 @@ void comparisonClass::setSampleProperties(std::map<std::string, int> index_map, 
   m_fillColor =    fillColor;
 }
 
-void comparisonClass::setSamplesAndHistoTitles(std::string histoXTitle, std::vector<std::string> sampleTitles)
+void comparisonClass::setSamplesAndHistoTitles(std::string histoXTitle, std::string histoYTitle, std::vector<std::string> sampleTitles)
 {
   m_histoXTitle = histoXTitle;
+  m_histoYTitle = histoYTitle;
   m_sampleTitles = sampleTitles;
 }
 
@@ -92,19 +93,23 @@ void comparisonClass::plotUpperPad()
     m_hsamples.at(i)->Add(m_sample_map[m_sampleNames.at(i).c_str()].getHistogram());
     m_hsamples.at(i)->SetFillColor(m_fillColor[m_sampleNames.at(i)]);
     m_hsamples.at(i)->SetLineColor(m_lineColor[m_sampleNames.at(i)]);
-    if (m_hsamples.at(i)->Integral()>0.){
-      m_hsamples.at(i)->Scale(1./m_hsamples.at(i)->Integral());
-    }
+    m_hsamples.at(i)->SetMarkerColor(m_lineColor[m_sampleNames.at(i)]);
+//    if (m_hsamples.at(i)->Integral()>0.){
+//      m_hsamples.at(i)->Scale(1./m_hsamples.at(i)->Integral());
+////      m_hsamples.at(i)->Scale(1./9.760000e+03);
+//    }
   }
 
 
   //--- Set Log scale, maximum and minimum for the plot
   float ymax = 0.;
-  for (int ibin=1; ibin<m_hsamples.at(0)->GetSize()-1; ibin++){
-    if (m_hsamples.at(0)->GetBinContent(ibin)>ymax) ymax = m_hsamples.at(0)->GetBinContent(ibin);
+  for (unsigned int i=0; i<m_sampleNames.size(); ++i){
+    for (int ibin=1; ibin<m_hsamples.at(i)->GetSize()-1; ibin++){
+      if (m_hsamples.at(i)->GetBinContent(ibin)>ymax) ymax = m_hsamples.at(i)->GetBinContent(ibin);
+    }
   }
 
-  m_hsamples.at(0)->SetMaximum(ymax*1.2);
+  m_hsamples.at(0)->SetMaximum(ymax*1.4);
   m_hsamples.at(0)->SetMinimum(0.);
 
   if (m_doLogScale){
@@ -114,10 +119,14 @@ void comparisonClass::plotUpperPad()
 
 
   //--- Draw THStacks and histograms
-  m_hsamples.at(0)->Draw("histo");
+  m_hsamples.at(0)->Draw("e");
   for (unsigned int i=1; i<m_sampleNames.size(); ++i){
-    m_hsamples.at(i)->Draw("histosame");
+    m_hsamples.at(i)->Draw("esame");
   }
+//  m_hsamples.at(0)->Draw("histo");
+//  for (unsigned int i=1; i<m_sampleNames.size(); ++i){
+//    m_hsamples.at(i)->Draw("histosame");
+//  }
 
   //--- Set cosmetics for THStack
   m_hsamples.at(0)->GetXaxis()->SetLabelSize(0.04);
@@ -127,20 +136,27 @@ void comparisonClass::plotUpperPad()
   m_hsamples.at(0)->GetYaxis()->SetLabelSize(0.04);
   m_hsamples.at(0)->GetYaxis()->SetTitleSize(0.05);
   m_hsamples.at(0)->GetYaxis()->SetTitleOffset(0.9);
-  m_hsamples.at(0)->GetYaxis()->SetTitle("Entries (a.u.)");
+  m_hsamples.at(0)->GetYaxis()->SetTitle(m_histoYTitle.c_str());
 
   gPad->Modified(); gPad->Update();
 
 
-  //--- Legend
-  m_legend = new TLegend(0.5, 0.7, 0.90, 0.90);
-  m_legend->SetBorderSize(1);
-  m_legend->SetLineColor(kWhite);
-  for (unsigned int i=0; i<m_sampleNames.size(); i++){
-    m_legend->AddEntry(m_sample_map[m_sampleNames.at(i).c_str()].getHistogram(), Form("%s", m_sampleTitles.at(i).c_str()), "l");
-  }
+//  //--- Legend
+//  m_legend = new TLegend(0.5, 0.6, 0.90, 0.90);
+//  m_legend->SetBorderSize(1);
+//  m_legend->SetLineColor(kWhite);
+//  for (unsigned int i=0; i<m_sampleNames.size(); i++){
+//    m_legend->AddEntry(m_sample_map[m_sampleNames.at(i).c_str()].getHistogram(), Form("%s", m_sampleTitles.at(i).c_str()), "l");
+//  }
+//
+//  m_legend->Draw();
 
-  m_legend->Draw();
+  TLatex *l = new TLatex();
+  l->SetNDC();
+  l->SetTextFont(72);
+  l->SetTextSize(0.045);
+//  l->DrawLatex(0.41,0.5,"WH, H#rightarrow aa, a#rightarrow b#bar{b}, m_{a} = 20 GeV");
+  l->DrawLatex(0.41,0.5,"ggF, H#rightarrow aa, a#rightarrow #mu^{+}#mu^{-}");
 
   //--- ATLAS label
   ATLASLabel(0.25,0.86,"", m_luminosity, 1);
@@ -156,123 +172,6 @@ void comparisonClass::finalize()
   if (m_savePlot){
     m_canvas->Print(Form("plots/%s.gif", m_distribution.c_str()));
     m_canvas->Print(Form("plots/%s.eps", m_distribution.c_str()));
+    m_canvas->Print(Form("plots/%s.pdf", m_distribution.c_str()));
   }
 }
-
-
-
-
-
-
-////--- comparisonClass
-//comparisonClass::comparisonClass(std::string distribution)
-//{
-//}
-//
-//comparisonClass::~comparisonClass()
-//{}
-//
-//void comparisonClass::plotUpperPad(int a)
-//{
-//  m_pad1->cd();
-//
-//  //--- Define m_hbkg and m_hsig
-//  for (auto bkg : m_bkgName){
-//    if (!m_sample_map[bkg.c_str()].getHasHisto()) continue;
-//    TH1F *htemp = (TH1F*) m_sample_map[bkg.c_str()].getHistogram()->Clone();
-//    m_hbkg = new TH1F(Form("h_bkg_%s", m_distribution.c_str()), "", htemp->GetSize()-2, htemp->GetXaxis()->GetXmin(), htemp->GetXaxis()->GetXmax());
-//    m_hsig = new TH1F(Form("h_sig_%s", m_distribution.c_str()), "", htemp->GetSize()-2, htemp->GetXaxis()->GetXmin(), htemp->GetXaxis()->GetXmax());
-//    htemp->Delete();
-//    break;
-//  }
-//
-//
-//  //--- Fill the map and histo of total background and signal
-//  float n_totalbkg = 0.;
-//  float n_totalsig = 0.;
-//
-//  m_sbkg = new THStack(Form("sbkg_%s", m_distribution.c_str()), "");
-//  m_ssig = new THStack(Form("ssig_%s", m_distribution.c_str()), "");
-//
-//
-//
-//  for (auto bkg : m_bkgName){
-//    if (!m_sample_map[bkg.c_str()].getHasHisto()) continue;
-//    m_sbkg->Add(m_sample_map[bkg.c_str()].getHistogram());
-//    m_hbkg->Add(m_sample_map[bkg.c_str()].getHistogram());
-//    n_totalbkg += m_sample_map[bkg.c_str()].getHistogram()->Integral();
-//  }
-//
-//  for (auto sig : m_sigName){
-//    if (!m_sample_map[sig.c_str()].getHasHisto()) continue;
-//    m_ssig->Add(m_sample_map[sig.c_str()].getHistogram());
-//    m_hsig->Add(m_sample_map[sig.c_str()].getHistogram());
-//    n_totalsig += m_sample_map[sig.c_str()].getHistogram()->Integral();
-//  }
-//
-//
-//  //--- Set Log scale, maximum and minimum for the plot
-//  float ymax = 0.;
-//  for (int ibin=1; ibin<m_hbkg->GetSize()-1; ibin++){
-//    if (m_hbkg->GetBinContent(ibin)>ymax) ymax = m_hbkg->GetBinContent(ibin);
-//  }
-//  for (int ibin=1; ibin<m_hsig->GetSize()-1; ibin++){
-//    if (m_hsig->GetBinContent(ibin)>ymax) ymax = m_hsig->GetBinContent(ibin);
-//  }
-//
-//  m_sbkg->SetMaximum(ymax*1.2);
-//  m_sbkg->SetMinimum(0.);
-//
-//  if (m_doLogScale){
-//    m_sbkg->SetMinimum(fmin(n_totalbkg, n_totalsig)/100.);
-//    gPad->SetLogy();
-//  }
-//
-//
-//  //--- Draw THStacks and histograms
-//  m_sbkg->Draw("histo");
-//  m_ssig->Draw("histosame");
-//
-//  //--- Set cosmetics for THStack
-//  m_sbkg->GetHistogram()->GetXaxis()->SetLabelSize(0.04);
-//  m_sbkg->GetHistogram()->GetXaxis()->SetTitleSize(0.05);
-//  m_sbkg->GetHistogram()->GetXaxis()->SetTitleOffset(0.9);
-//  m_sbkg->GetHistogram()->GetXaxis()->SetTitle(m_histoXTitle.c_str());
-//  m_sbkg->GetHistogram()->GetYaxis()->SetLabelSize(0.04);
-//  m_sbkg->GetHistogram()->GetYaxis()->SetTitleSize(0.05);
-//  m_sbkg->GetHistogram()->GetYaxis()->SetTitleOffset(0.9);
-//  m_sbkg->GetHistogram()->GetYaxis()->SetTitle("Entries (a.u.)");
-//
-//  gPad->Modified(); gPad->Update();
-//
-//
-//  //--- Legend
-//  m_legend = new TLegend(0.5, 0.7, 0.90, 0.90);
-//  m_legend->SetBorderSize(1);
-//  m_legend->SetLineColor(kWhite);
-//  for (auto bkg : m_bkgName){
-//    m_legend->AddEntry(m_sample_map[bkg.c_str()].getHistogram(), Form("%s", m_sample1Title.c_str()), "l");
-//  }
-//
-//  for (auto sig : m_sigName){
-//    m_legend->AddEntry(m_sample_map[sig.c_str()].getHistogram(), Form("%s", m_sample2Title.c_str()), "l");
-//  }
-//  m_legend->Draw();
-//
-//  //--- ATLAS label
-//  ATLASLabel(0.25,0.86,"", m_luminosity, 1);
-//
-//  m_canvas->Update();
-//}
-//
-//void comparisonClass::setSamplesAndHistoTitles(std::string histoXTitle, std::string sample1Title, std::string sample2Title)
-//{
-//  m_histoXTitle = histoXTitle;
-//  m_sample1Title = sample1Title;
-//  m_sample2Title = sample2Title;
-//}
-
-
-
-
-

@@ -280,6 +280,7 @@ void plotClass::finalize()
   if (m_savePlot){
     m_canvas->Print(Form("plots/%s.gif", m_distribution.c_str()));
     m_canvas->Print(Form("plots/%s.eps", m_distribution.c_str()));
+    m_canvas->Print(Form("plots/%s.pdf", m_distribution.c_str()));
   }
 }
 

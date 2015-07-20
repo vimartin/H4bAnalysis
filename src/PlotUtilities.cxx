@@ -636,6 +636,10 @@ void doAllPlots(int analysis_type, std::string pass, std::map<string, TH1*> &h_1
     plot1D(Form("h_nfatjets-%s",pass.c_str()), selected_jets.size(), weight, h_1d, "", 10, -0.5, 9.5);
     plot1D(Form("h_nfatbjets-%s",pass.c_str()), selected_bjets.size(), weight, h_1d, "", 10, -0.5, 9.5);
     plot1D(Form("h_RecoHMass-%s",pass.c_str()), findBoostedRecoHmass(selected_bjets), weight, h_1d, "", 25, 0., 250.);
+    if (selected_bjets.size()==2){
+      if (findBoostedRecoHmass(selected_bjets)>60)
+        plot1D(Form("h_fatjet_trimmed_mass_verena-%s",pass.c_str()), findBoostedRecoHmass(selected_bjets), weight, h_1d, "", 50, 0., 150.);
+    }
     for (auto jet : selected_jets) {
       plot1D(Form("h_fatjet_pt-%s",pass.c_str()), jet.pseudoJet.perp()/1000., weight, h_1d, "", 30, 0., 300.);
       plot1D(Form("h_fatjet_eta-%s",pass.c_str()), jet.pseudoJet.eta(), weight, h_1d, "", 100, -5., 5.);
@@ -730,6 +734,7 @@ void doAllPlots(int analysis_type, std::string pass, std::map<string, TH1*> &h_1
         plot1D(Form("h_fatjet_trimmed_eta-%s",pass.c_str()), jet.trimmed_pseudoJet.eta(), weight, h_1d, "", 100, -5., 5.);
         plot1D(Form("h_fatjet_trimmed_mass-%s",pass.c_str()), jet.trimmed_pseudoJet.m()/1000., weight, h_1d, "", 100, 0., 150.);
         plot1D(Form("h_nsubjet_trimmed-%s",pass.c_str()), jet.trimmed_subPseudoJets.size(), weight, h_1d, "", 10, -0.5, 9.5);
+//        plot1D(Form("h_fatjet_trimmed_mass_verena-%s",pass.c_str()), jet.trimmed_pseudoJet.m()/1000., weight, h_1d, "", 50, 0., 150.);
         if (jet.hasTrimmingSubstructure){
           int nbsub = 0;
           int bsub1 = -1;

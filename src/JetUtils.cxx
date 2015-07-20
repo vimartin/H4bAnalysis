@@ -208,7 +208,7 @@ double findBoostedRecoHmass(std::vector<particleJet> selected_jets){
   TLorentzVector H_tlv;
   if (selected_jets.size()>1){
     for (auto jet : selected_jets){
-      H_tlv += TLorentzVector(jet.pruned_pseudoJet.px(), jet.pruned_pseudoJet.py(), jet.pruned_pseudoJet.pz(), jet.pruned_pseudoJet.e());
+      H_tlv += TLorentzVector(jet.trimmed_pseudoJet.px(), jet.trimmed_pseudoJet.py(), jet.trimmed_pseudoJet.pz(), jet.trimmed_pseudoJet.e());
     }
   }
   recoHmass = H_tlv.M()/1000.;
