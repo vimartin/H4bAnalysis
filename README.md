@@ -10,4 +10,4 @@
 	--- compile and run analysis code ---
 	make clean
 	make all
-	./boosted.exe JOs/boosted_PowhegPythia8EvtGen_WplusenuH_H125_a60a60_bbbb.cfg
+	./resolved.exe JOs/PowhegPythia8EvtGen_WplusenuH_H125_a60a60_bbbb.cfg
