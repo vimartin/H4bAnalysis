@@ -41,6 +41,7 @@ class particleLepton {
 
 
 std::vector<int> findHardScatterLeptons(std::vector<GenParticle_p5>& partList, bool isSherpa=false, bool isPythia6 = false);
+std::vector<int> findIndexPdgidStatus(std::vector<GenParticle_p5>& partList, int pdgId, int status, bool isSherpa, bool isPythia6);
 TLorentzVector findDressedLepton(std::vector<GenParticle_p5>& partList, bool isPythia6, TLorentzVector Vlepton_vec, double radius);
 std::vector<int> finalStateMuons(std::vector<GenParticle_p5>& partList, bool isSherpa=false, bool isPythia6=false);
 double LeptonIsolation(fastjet::PseudoJet& lepton, std::vector<fastjet::PseudoJet>& jetList, double Rmin, double Rmax);

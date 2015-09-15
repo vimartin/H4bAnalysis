@@ -63,6 +63,10 @@ int main(int argc, char** argv){
   double jet_ptmin = reader.GetReal("jet", "ptmin", 40000.0);
   double jet_etamax = reader.GetReal("jet", "etamax", 2.6);
 
+  // B-jet selection
+  double bjet_ptmin = reader.GetReal("bjet", "ptmin", 40000.0);
+  double bjet_etamax = reader.GetReal("bjet", "etamax", 2.6);
+
   // Lepton selection
   double lep_ptmin = reader.GetReal("lepton", "lep_ptmin", 26000.0);
   double lep_etamax = reader.GetReal("lepton", "lep_etamax", 2.47);
@@ -76,7 +80,8 @@ int main(int argc, char** argv){
 
   // files
   std::string dataFileName = reader_sample.Get("io", "data_file_name", "UNKNOWN");
-  std::string outputFileName = Form("resolved_%s", reader_sample.Get("io", "result_file_name", "UNKNOWN").c_str());
+  std::string outputFileName = Form("yellowbook_%s", reader_sample.Get("io", "result_file_name", "UNKNOWN").c_str());
+  double hyp_mass = reader_sample.GetReal("io", "hyp_mass", -1);
   bool isSignal = reader_sample.GetBoolean("io", "isSignal", false);
   bool isPythia6 = reader_sample.GetBoolean("io", "isPythia6", false);
   bool isSherpa = reader_sample.GetBoolean("io", "isSherpa", false);
@@ -121,6 +126,7 @@ int main(int argc, char** argv){
   std::vector<particleJet>        selected_jets;
   std::vector<particleJet>        selected_bjets;
   std::vector<particleJet>        selected_ljets;
+  std::vector<particleJet>        selected_vbfjets;
   std::vector<particleLepton>     pre_selected_lepton;
   std::vector<particleLepton>     selected_lepton;
 
@@ -149,6 +155,7 @@ int main(int argc, char** argv){
     selected_jets.clear();
     selected_bjets.clear();
     selected_ljets.clear();
+    selected_vbfjets.clear();
     pre_selected_lepton.clear();
     selected_lepton.clear();
 
@@ -157,50 +164,58 @@ int main(int argc, char** argv){
 
     // TLorentzVector for the particle
     TLorentzVector partvec;
+    TLorentzVector ghostpartvec; // anyways it's not a stable particle...
 
     // Find the index of the hard scatter leptons
     std::vector<int> theHL = findHardScatterLeptons(event->m_genParticles, isSherpa, isPythia6);
     particleLepton lepton;
+
+    // Find the index of the pseudoscalars
+    std::vector<int> thePseudoscalars = findIndexPdgidStatus(event->m_genParticles, 36, 22, isSherpa, isPythia6);
+
+    // Find the index of the Higgs
+    std::vector<int> theHiggs = findIndexPdgidStatus(event->m_genParticles, 35, 22, isSherpa, isPythia6);
+    
+    // Find the index of the W boson
+    std::vector<int> theWboson = findIndexPdgidStatus(event->m_genParticles, 24, 22, isSherpa, isPythia6);
 
     // Loop over all particles in the event
     int index = -1;
     for (auto part : event->m_genParticles) {
       index++;
       partvec.SetXYZM(part.m_px, part.m_py, part.m_pz, part.m_m);
+      ghostpartvec = partvec * ghost_factor;
 
       if (isSignal) {
         if (index == theBHdecays[0][0]) {
-          partvec *= ghost_factor;
-          fastjet::PseudoJet bghost(partvec.Px(),partvec.Py(),partvec.Pz(),partvec.E());
+          fastjet::PseudoJet bghost(ghostpartvec.Px(),ghostpartvec.Py(),ghostpartvec.Pz(),ghostpartvec.E());
           bghost.set_user_index(-50001);
           input_particles.push_back(bghost);
-          continue;
         } else if (index == theBHdecays[0][1]) {
-          partvec *= ghost_factor;
-          fastjet::PseudoJet bghost(partvec.Px(),partvec.Py(),partvec.Pz(),partvec.E());
+          fastjet::PseudoJet bghost(ghostpartvec.Px(),ghostpartvec.Py(),ghostpartvec.Pz(),ghostpartvec.E());
           bghost.set_user_index(-50002);
           input_particles.push_back(bghost);
-          continue;
         } else if (index == theBHdecays[1][0]) {
-          partvec *= ghost_factor;
-          fastjet::PseudoJet bghost(partvec.Px(),partvec.Py(),partvec.Pz(),partvec.E());
+          fastjet::PseudoJet bghost(ghostpartvec.Px(),ghostpartvec.Py(),ghostpartvec.Pz(),ghostpartvec.E());
           bghost.set_user_index(-50003);
           input_particles.push_back(bghost);
-          continue;
         } else if (index == theBHdecays[1][1]) {
-          partvec *= ghost_factor;
-          fastjet::PseudoJet bghost(partvec.Px(),partvec.Py(),partvec.Pz(),partvec.E());
+          fastjet::PseudoJet bghost(ghostpartvec.Px(),ghostpartvec.Py(),ghostpartvec.Pz(),ghostpartvec.E());
           bghost.set_user_index(-50004);
           input_particles.push_back(bghost);
-          continue;
         }
       }
+      //--- generate a dummy parton with momentum ~0, and user index -5, to signal the b's
       if (isBhadron(part.m_pdgId)) {
-        partvec *= ghost_factor;
-        fastjet::PseudoJet bghost(partvec.Px(),partvec.Py(),partvec.Pz(),partvec.E());
+        fastjet::PseudoJet bghost(ghostpartvec.Px(),ghostpartvec.Py(),ghostpartvec.Pz(),ghostpartvec.E());
         bghost.set_user_index(-5);
         input_particles.push_back(bghost);
-        continue;
+      }
+      //--- generate a dummy parton with momentum ~0, and user index -100, to signal the vbf's
+      if (isVBFhadron(part.m_pdgId, part.m_status, part.m_prodVtx)) {
+        fastjet::PseudoJet vbfghost(ghostpartvec.Px(),ghostpartvec.Py(),ghostpartvec.Pz(),ghostpartvec.E());
+        vbfghost.set_user_index(-100);
+        input_particles.push_back(vbfghost);
       }
 
       // Get TLorentz vector of the lepton
@@ -242,6 +257,28 @@ int main(int argc, char** argv){
 
     // Truth level, before selection
     if (isSignal) {
+      TLorentzVector h1, a1, a2, w1;
+      if (theHiggs.size()>0) 
+        h1.SetXYZM(event->m_genParticles[theHiggs.at(0)].m_px, event->m_genParticles[theHiggs.at(0)].m_py, event->m_genParticles[theHiggs.at(0)].m_pz, event->m_genParticles[theHiggs.at(0)].m_m);
+      if (thePseudoscalars.size()>1) {
+        a1.SetXYZM(event->m_genParticles[thePseudoscalars.at(0)].m_px, event->m_genParticles[thePseudoscalars.at(0)].m_py, event->m_genParticles[thePseudoscalars.at(0)].m_pz, event->m_genParticles[thePseudoscalars.at(0)].m_m);
+        a2.SetXYZM(event->m_genParticles[thePseudoscalars.at(1)].m_px, event->m_genParticles[thePseudoscalars.at(1)].m_py, event->m_genParticles[thePseudoscalars.at(1)].m_pz, event->m_genParticles[thePseudoscalars.at(1)].m_m);
+      }
+      if (theWboson.size()>0) 
+        w1.SetXYZM(event->m_genParticles[theWboson.at(0)].m_px, event->m_genParticles[theWboson.at(0)].m_py, event->m_genParticles[theWboson.at(0)].m_pz, event->m_genParticles[theWboson.at(0)].m_m);
+
+      plot1D("h_hparton_pt", h1.Pt()/1000., 1., h_1d, "Higgs pT", 125, 0, 250);
+      plot1D("h_aparton_pt", a1.Pt()/1000., 1., h_1d, "Pseudoscalar pT", 100, 0, 150);
+      plot1D("h_aparton_pt", a2.Pt()/1000., 1., h_1d, "Pseudoscalar pT", 100, 0, 150);
+      plot1D("h_wparton_pt", w1.Pt()/1000., 1., h_1d, "W boson pT", 125, 0, 250);
+
+      plot1D("h_hparton_eta", h1.Eta(), 1., h_1d, "Higgs eta", 100, -5, 5);
+      plot1D("h_aparton_eta", a1.Eta(), 1., h_1d, "Pseudoscalar eta", 100, -5, 5);
+      plot1D("h_aparton_eta", a2.Eta(), 1., h_1d, "Pseudoscalar eta", 100, -5, 5);
+      plot1D("h_wparton_eta", w1.Eta(), 1., h_1d, "W boson eta", 100, -5, 5);
+
+      plot1D("h_aa_dR", a1.DeltaR(a2), 1., h_1d, "a-a dR", 100, 0, 5);
+
       TLorentzVector b1, b2, b3, b4;
       b1.SetXYZM(event->m_genParticles[theBHdecays[0][0]].m_px, event->m_genParticles[theBHdecays[0][0]].m_py, event->m_genParticles[theBHdecays[0][0]].m_pz, event->m_genParticles[theBHdecays[0][0]].m_m);
       b2.SetXYZM(event->m_genParticles[theBHdecays[0][1]].m_px, event->m_genParticles[theBHdecays[0][1]].m_py, event->m_genParticles[theBHdecays[0][1]].m_pz, event->m_genParticles[theBHdecays[0][1]].m_m);
@@ -305,6 +342,7 @@ int main(int argc, char** argv){
       particleJet partJet;
       partJet.jet = jetvec;
       partJet.isBjet = isBjet(jet);
+      partJet.isVBFjet = isVBFjet(jet);
       partJet.nBpartons = nBpartonInBjet(jet);
       partJet.pseudoJet = jet;
 
@@ -344,8 +382,14 @@ int main(int argc, char** argv){
 
     // Define the b-jets
     for (auto jet : selected_jets) {
-      if (jet.isBjet) {
+      if (jet.isBjet && jet.jet.Pt()>bjet_ptmin && fabs(jet.jet.Eta())<bjet_etamax) {
         selected_bjets.push_back(jet);
+      }
+      else {
+        selected_ljets.push_back(jet);
+        if (jet.isVBFjet){
+          selected_vbfjets.push_back(jet);
+        }
       }
     } 
 
@@ -354,7 +398,7 @@ int main(int argc, char** argv){
     // =========
 
     //--- All events
-    doAllPlots(3, "", h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec/nentries);
+    doAllPlots(3, "", h_1d, h_2d, selected_jets, selected_bjets, selected_ljets, selected_vbfjets, selected_lepton, mc_weight*xsec/nentries);
 
     //=== PRESELECTION
     //--- Pass lepton requirement
@@ -363,7 +407,7 @@ int main(int argc, char** argv){
     if (pass.find(std::string("passLepton")) != std::string::npos){
       plot1D_cutflow("cutflow", 4, h_1d, "Cut flow", cutflow_bin_title);
     }
-    doAllPlots(3, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec/nentries);
+    doAllPlots(3, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_ljets, selected_vbfjets, selected_lepton, mc_weight*xsec/nentries);
 
 
     //=== SELECTION
@@ -373,13 +417,13 @@ int main(int argc, char** argv){
     if (pass.find(std::string("passLepton-pass3Jets")) != std::string::npos){
       plot1D_cutflow("cutflow", 5, h_1d, "Cut flow", cutflow_bin_title);
     }
-    doAllPlots(3, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec/nentries);
+    doAllPlots(3, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_ljets, selected_vbfjets, selected_lepton, mc_weight*xsec/nentries);
 
     selected_jets.size()>=4  ? pass=Form("%s-pass4Jets", pass.c_str()) : pass=Form("%s-fail4Jets", pass.c_str());
     if (pass.find(std::string("passLepton-fail3Jets-pass4Jets")) != std::string::npos){
       plot1D_cutflow("cutflow", 6, h_1d, "Cut flow", cutflow_bin_title);
     }
-    doAllPlots(3, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec/nentries);
+    doAllPlots(3, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_ljets, selected_vbfjets, selected_lepton, mc_weight*xsec/nentries);
 
     //--- B-jets requirements (signal regions)
 
@@ -390,15 +434,22 @@ int main(int argc, char** argv){
     if (pass.find(std::string("passLepton-fail3Jets-pass4Jets-pass3BJets")) != std::string::npos){
       plot1D_cutflow("cutflow", 8, h_1d, "Cut flow", cutflow_bin_title); //4j-3b
     }
-    doAllPlots(3, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec/nentries);
+    doAllPlots(3, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_ljets, selected_vbfjets, selected_lepton, mc_weight*xsec/nentries);
 
     selected_bjets.size()>=4  ? pass=Form("%s-pass4BJets", pass.c_str()) : pass=Form("%s-fail4BJets", pass.c_str());
     if (pass.find(std::string("passLepton-fail3Jets-pass4Jets-fail3BJets-pass4BJets")) != std::string::npos){
       plot1D_cutflow("cutflow", 9, h_1d, "Cut flow", cutflow_bin_title); //4j-4b
     }
-    doAllPlots(3, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec/nentries);
+    doAllPlots(3, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_ljets, selected_vbfjets, selected_lepton, mc_weight*xsec/nentries);
 
   } // end loop entries
+
+  plot1D("h_aa_meanDeltaR", -1, 1., h_1d, "aa mean DeltaR", 70, 0, 70);
+  h_1d["h_aa_meanDeltaR"]->SetBinContent(hyp_mass, h_1d["h_aa_dR"]->GetMean());
+  h_1d["h_aa_meanDeltaR"]->SetBinError(hyp_mass, h_1d["h_aa_dR"]->GetRMS());
+  plot1D("h_bbar_meanDeltaR", -1, 1., h_1d, "bbar mean DeltaR", 70, 0, 70);
+  h_1d["h_bbar_meanDeltaR"]->SetBinContent(hyp_mass, h_1d["h_bbar_dR"]->GetMean());
+  h_1d["h_bbar_meanDeltaR"]->SetBinError(hyp_mass, h_1d["h_bbar_dR"]->GetRMS());
 
   cout << "---- REPORT ----" << endl;
   cout << "Acceptance 3j-3b: " << endl << "   " << 100*h_1d["cutflow"]->GetBinContent(8)/h_1d["cutflow"]->GetBinContent(1) << "%" << endl;

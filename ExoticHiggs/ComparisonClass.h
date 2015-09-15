@@ -24,7 +24,7 @@ class comparisonClass {
     comparisonClass(std::string);
     ~comparisonClass();
     void setSampleNames(std::vector<std::string>); //--- vector with the strings of all the samples to compare
-    void setGlobalProperties(float luminosity, bool doLogScale, bool savePlot);
+    void setGlobalProperties(float luminosity, bool doLogScale, bool savePlot, bool normalizeUnity, int drawMode, bool drawLegend, std::string drawLatex, std::string saveFolder);
     void setSampleProperties(std::map<std::string, int> index_map, std::map<std::string,std::string> address_map, std::map<std::string,bool> isSignal_map, std::map<std::string,float> scale_map, std::map<std::string,int> lineColor, std::map<std::string,int> fillColor);
     void setSamplesAndHistoTitles(std::string histoXTitle, std::string histoYTitle, std::vector<std::string> sampleTitles);
     void read();
@@ -45,9 +45,14 @@ class comparisonClass {
     std::vector< TH1F* > m_hsamples;
     TLegend *m_legend;
 
-    float m_luminosity;
-    bool m_doLogScale;
-    bool m_savePlot;
+    float                              m_luminosity;
+    bool                               m_doLogScale;
+    bool                               m_savePlot;
+    bool                               m_normalizeUnity;
+    int                                m_drawMode;
+    bool                               m_drawLegend;
+    std::string                        m_drawLatex;
+    std::string                        m_saveFolder;
     std::map<std::string, int>         m_index_map;
     std::map<std::string, std::string> m_address_map;
     std::map<std::string, bool>        m_isSignal_map;

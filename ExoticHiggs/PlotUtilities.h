@@ -62,7 +62,8 @@ void savePlotsDir(std::map<string, TH1*>& h_1d, TFile* outfile, const char* outd
 void savePlots2Dir(std::map<string, TH2D*>& h_2d, TFile* outfile, const char* outdir = "");
 void savePlots12(std::map<string, TH1D*>&, std::map<string, TH2D*>&, const char* );
 
-void doAllPlots(int, std::string, std::map<string, TH1*> &, std::map<string, TH2D*> &, std::vector<particleJet>, std::vector<particleJet>, std::vector<particleLepton>, double);
+void doAllPlots(int, std::string, std::map<string, TH1*> &, std::map<string, TH2D*> &, std::vector<particleJet>, std::vector<particleJet>, std::vector<particleJet>, std::vector<particleLepton>, double);
+void doAllPlots(int, std::string, std::map<string, TH1*> &, std::map<string, TH2D*> &, std::vector<particleJet>, std::vector<particleJet>, std::vector<particleJet>, std::vector<particleJet>, std::vector<particleLepton>, double);
 
 #endif
 

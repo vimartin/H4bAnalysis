@@ -596,8 +596,13 @@ void plot3D(string name, float xval, float yval, float zval, double weight, std:
 
 
 
+void doAllPlots(int analysis_type, std::string pass, std::map<string, TH1*> &h_1d, std::map<string, TH2D*> &h_2d, std::vector<particleJet> selected_jets, std::vector<particleJet> selected_bjets, std::vector<particleJet> selected_ljets, std::vector<particleLepton> selected_lepton, double weight)
+{
+  std::vector<particleJet> selected_vbfjets;
+  doAllPlots(analysis_type, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_ljets, selected_vbfjets, selected_lepton, weight);
+}
 
-void doAllPlots(int analysis_type, std::string pass, std::map<string, TH1*> &h_1d, std::map<string, TH2D*> &h_2d, std::vector<particleJet> selected_jets, std::vector<particleJet> selected_bjets, std::vector<particleLepton> selected_lepton, double weight)
+void doAllPlots(int analysis_type, std::string pass, std::map<string, TH1*> &h_1d, std::map<string, TH2D*> &h_2d, std::vector<particleJet> selected_jets, std::vector<particleJet> selected_bjets, std::vector<particleJet> selected_ljets, std::vector<particleJet> selected_vbfjets, std::vector<particleLepton> selected_lepton, double weight)
 {
 
   plot1D(Form("h_total_events-%s",pass.c_str()), 0.5, weight, h_1d, "", 1, 0., 1.);
@@ -834,13 +839,14 @@ void doAllPlots(int analysis_type, std::string pass, std::map<string, TH1*> &h_1
       plot1D(Form("h_lepton_pt-%s",pass.c_str()), lepton.getLeptonDressed().Pt()/1000., weight, h_1d, "", 100, 0., 150.);
       plot1D(Form("h_lepton_eta-%s",pass.c_str()), lepton.getLeptonDressed().Eta(), weight, h_1d, "", 100, -5, -5);
       plot1D(Form("h_leptonraw_pt-%s",pass.c_str()), lepton.getLeptonRaw().Pt()/1000., weight, h_1d, "", 100, 0., 150.);
+      plot1D(Form("h_leptonraw_eta-%s",pass.c_str()), lepton.getLeptonRaw().Eta(), weight, h_1d, "", 100, -5, -5);
       plot1D(Form("h_lepton_iso-%s",pass.c_str()), lepton.getIsolation(), weight, h_1d, "", 100, 0., 0.5);
       plot1D(Form("h_lepton_miniiso-%s",pass.c_str()), lepton.getMiniIsolation(), weight, h_1d, "", 100, 0., 0.5);
     }
     plot1D(Form("h_njets-%s",pass.c_str()), selected_jets.size(), weight, h_1d, "", 10, -0.5, 9.5);
     int jet_counter = 0;
     for (auto jet : selected_jets) {
-      plot1D(Form("h_jets_pt-%s",pass.c_str()), jet.jet.Pt()/1000., weight, h_1d, "", 30, 0., 300);
+      plot1D(Form("h_jets_pt-%s",pass.c_str()), jet.jet.Pt()/1000., weight, h_1d, "", 100, 0., 150);
       plot1D(Form("h_jets_eta-%s",pass.c_str()), jet.jet.Eta(), weight, h_1d, "", 100, -5, 5);
       plot1D(Form("h_jet%d_pt-%s", jet_counter, pass.c_str()), jet.jet.Pt()/1000., weight, h_1d, "", 30, 0., 300);
       plot1D(Form("h_jet%d_eta-%s", jet_counter, pass.c_str()), jet.jet.Eta(), weight, h_1d, "", 100, -5, 5);
@@ -852,13 +858,32 @@ void doAllPlots(int analysis_type, std::string pass, std::map<string, TH1*> &h_1
     plot2D(Form("h_njets_vs_nbjets-%s",pass.c_str()), selected_jets.size(), selected_bjets.size(), weight, h_2d, "", 10, -0.5, 9.5, 10, -0.5, 9.5);
     int bjet_counter = 0;
     for (auto bjet : selected_bjets) {
-      plot1D(Form("h_bjets_pt-%s",pass.c_str()), bjet.jet.Pt()/1000., weight, h_1d, "", 30, 0., 300);
+      plot1D(Form("h_bjets_pt-%s",pass.c_str()), bjet.jet.Pt()/1000., weight, h_1d, "", 100, 0., 150);
       plot1D(Form("h_bjets_eta-%s",pass.c_str()), bjet.jet.Eta(), weight, h_1d, "", 100, -5, 5);
       plot1D(Form("h_nbpartonjets-%s",pass.c_str()), bjet.nBpartons, weight, h_1d, "", 5, -0.5, 4.5);
       plot1D(Form("h_bjet%d_pt-%s", bjet_counter, pass.c_str()), bjet.jet.Pt()/1000., weight, h_1d, "", 30, 0., 300);
       plot1D(Form("h_bjet%d_eta-%s", bjet_counter, pass.c_str()), bjet.jet.Eta(), weight, h_1d, "", 100, -5, 5);
       bjet_counter++;
     }
+    plot1D(Form("h_nljets-%s",pass.c_str()), selected_ljets.size(), weight, h_1d, "", 10, -0.5, 9.5);
+    int ljet_counter = 0;
+    for (auto ljet : selected_ljets) {
+      plot1D(Form("h_ljets_pt-%s",pass.c_str()), ljet.jet.Pt()/1000., weight, h_1d, "", 100, 0., 150);
+      plot1D(Form("h_ljets_eta-%s",pass.c_str()), ljet.jet.Eta(), weight, h_1d, "", 100, -5, 5);
+      plot1D(Form("h_ljet%d_pt-%s", ljet_counter, pass.c_str()), ljet.jet.Pt()/1000., weight, h_1d, "", 30, 0., 300);
+      plot1D(Form("h_ljet%d_eta-%s", ljet_counter, pass.c_str()), ljet.jet.Eta(), weight, h_1d, "", 100, -5, 5);
+      ljet_counter++;
+    }
+    plot1D(Form("h_nvbfjets-%s",pass.c_str()), selected_vbfjets.size(), weight, h_1d, "", 10, -0.5, 9.5);
+    int vbfjet_counter = 0;
+    for (auto vbfjet : selected_vbfjets) {
+      plot1D(Form("h_vbfjets_pt-%s",pass.c_str()), vbfjet.jet.Pt()/1000., weight, h_1d, "", 30, 0., 300);
+      plot1D(Form("h_vbfjets_eta-%s",pass.c_str()), vbfjet.jet.Eta(), weight, h_1d, "", 100, -5, 5);
+      plot1D(Form("h_vbfjet%d_pt-%s", vbfjet_counter, pass.c_str()), vbfjet.jet.Pt()/1000., weight, h_1d, "", 30, 0., 300);
+      plot1D(Form("h_vbfjet%d_eta-%s", vbfjet_counter, pass.c_str()), vbfjet.jet.Eta(), weight, h_1d, "", 100, -5, 5);
+      vbfjet_counter++;
+    }
+    if (selected_vbfjets.size()==2) plot1D(Form("h_vbfjets_deltaEta-%s",pass.c_str()), fabs(selected_vbfjets.at(0).jet.Eta()-selected_vbfjets.at(1).jet.Eta()), weight, h_1d, "", 30, 0., 10);
     if (selected_lepton.size()>0 && selected_bjets.size()>1){
       plot2D(Form("h_leptonpt_vs_bjetpt-%s",pass.c_str()), selected_lepton.at(0).getLeptonDressed().Pt()/1000., (selected_bjets.at(0).jet.Pt()+selected_bjets.at(1).jet.Pt())/1000., weight, h_2d, "", 100, 0., 150., 30, 0., 300.);
     }

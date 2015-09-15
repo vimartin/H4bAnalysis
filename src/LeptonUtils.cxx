@@ -220,6 +220,25 @@ std::vector<int> findHardScatterLeptons(std::vector<GenParticle_p5>& partList, b
   return index_vec;
 }
 
+
+std::vector<int> findIndexPdgidStatus(std::vector<GenParticle_p5>& partList, int pdgId, int status, bool isSherpa, bool isPythia6)
+{
+  int index = 0;
+  std::vector<int> index_vec;
+
+  if (!isSherpa){
+    if (!isPythia6) {
+      for (auto part : partList) {
+        if (fabs(part.m_pdgId)==pdgId && part.m_status==status){
+          index_vec.push_back(index);
+        }
+        index++;
+      }
+    }
+  }
+  return index_vec;
+}
+
 TLorentzVector findDressedLepton(std::vector<GenParticle_p5>& partList, bool isPythia6, TLorentzVector Vlepton_vec, double radius)
 {
   // Lepton TLorentzVector

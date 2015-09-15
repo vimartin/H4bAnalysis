@@ -18,11 +18,16 @@ comparisonClass::~comparisonClass()
   }
 }
 
-void comparisonClass::setGlobalProperties(float luminosity, bool doLogScale, bool savePlot)
+void comparisonClass::setGlobalProperties(float luminosity, bool doLogScale, bool savePlot, bool normalizeUnity, int drawMode, bool drawLegend, std::string drawLatex, std::string saveFolder)
 {
-  m_luminosity = luminosity;
-  m_doLogScale = doLogScale;
-  m_savePlot = savePlot;
+  m_luminosity     = luminosity;
+  m_doLogScale     = doLogScale;
+  m_savePlot       = savePlot;
+  m_normalizeUnity = normalizeUnity;
+  m_drawMode       = drawMode;
+  m_drawLegend     = drawLegend;
+  m_drawLatex      = drawLatex;
+  m_saveFolder     = saveFolder;
 }
 
 void comparisonClass::setSampleNames(std::vector<std::string> sampleNames)
@@ -94,10 +99,12 @@ void comparisonClass::plotUpperPad()
     m_hsamples.at(i)->SetFillColor(m_fillColor[m_sampleNames.at(i)]);
     m_hsamples.at(i)->SetLineColor(m_lineColor[m_sampleNames.at(i)]);
     m_hsamples.at(i)->SetMarkerColor(m_lineColor[m_sampleNames.at(i)]);
-//    if (m_hsamples.at(i)->Integral()>0.){
-//      m_hsamples.at(i)->Scale(1./m_hsamples.at(i)->Integral());
-////      m_hsamples.at(i)->Scale(1./9.760000e+03);
-//    }
+    if (m_normalizeUnity){
+      if (m_hsamples.at(i)->Integral()>0.){
+        m_hsamples.at(i)->Scale(1./m_hsamples.at(i)->Integral());
+        ////      m_hsamples.at(i)->Scale(1./9.760000e+03);
+      }
+    }
   }
 
 
@@ -109,7 +116,7 @@ void comparisonClass::plotUpperPad()
     }
   }
 
-  m_hsamples.at(0)->SetMaximum(ymax*1.4);
+  m_hsamples.at(0)->SetMaximum(ymax*1.8);
   m_hsamples.at(0)->SetMinimum(0.);
 
   if (m_doLogScale){
@@ -119,14 +126,18 @@ void comparisonClass::plotUpperPad()
 
 
   //--- Draw THStacks and histograms
-  m_hsamples.at(0)->Draw("e");
-  for (unsigned int i=1; i<m_sampleNames.size(); ++i){
-    m_hsamples.at(i)->Draw("esame");
+  if (m_drawMode==1){
+    m_hsamples.at(0)->Draw("histo");
+    for (unsigned int i=1; i<m_sampleNames.size(); ++i){
+      m_hsamples.at(i)->Draw("histosame");
+    }
   }
-//  m_hsamples.at(0)->Draw("histo");
-//  for (unsigned int i=1; i<m_sampleNames.size(); ++i){
-//    m_hsamples.at(i)->Draw("histosame");
-//  }
+  else if (m_drawMode==2){
+    m_hsamples.at(0)->Draw("e");
+    for (unsigned int i=1; i<m_sampleNames.size(); ++i){
+      m_hsamples.at(i)->Draw("esame");
+    }
+  }
 
   //--- Set cosmetics for THStack
   m_hsamples.at(0)->GetXaxis()->SetLabelSize(0.04);
@@ -142,24 +153,25 @@ void comparisonClass::plotUpperPad()
 
 
   //--- Legend
-  m_legend = new TLegend(0.5, 0.6, 0.90, 0.90);
-  m_legend->SetBorderSize(1);
-  m_legend->SetLineColor(kWhite);
-  for (unsigned int i=0; i<m_sampleNames.size(); i++){
-    m_legend->AddEntry(m_sample_map[m_sampleNames.at(i).c_str()].getHistogram(), Form("%s", m_sampleTitles.at(i).c_str()), "l");
-  }
+  if (m_drawLegend){
+    m_legend = new TLegend(0.5, 0.6, 0.90, 0.90);
+    m_legend->SetBorderSize(1);
+    m_legend->SetLineColor(kWhite);
+    for (unsigned int i=0; i<m_sampleNames.size(); i++){
+      m_legend->AddEntry(m_sample_map[m_sampleNames.at(i).c_str()].getHistogram(), Form("%s", m_sampleTitles.at(i).c_str()), "l");
+    }
 
-  m_legend->Draw();
+    m_legend->Draw();
+  }
 
   TLatex *l = new TLatex();
   l->SetNDC();
   l->SetTextFont(72);
   l->SetTextSize(0.045);
-//  l->DrawLatex(0.41,0.5,"WH, H#rightarrow aa, a#rightarrow b#bar{b}, m_{a} = 20 GeV");
-  l->DrawLatex(0.41,0.5,"ggF, H#rightarrow aa, a#rightarrow #mu^{+}#mu^{-}");
+  l->DrawLatex(0.5, 0.8, m_drawLatex.c_str());
 
   //--- ATLAS label
-  ATLASLabel(0.25,0.86,"", m_luminosity, 1);
+//  ATLASLabel(0.25,0.86,"", m_luminosity, 1);
 
   m_canvas->Update();
 
@@ -170,8 +182,8 @@ void comparisonClass::finalize()
 {
   m_canvas->Update();
   if (m_savePlot){
-    m_canvas->Print(Form("plots/%s.gif", m_distribution.c_str()));
-    m_canvas->Print(Form("plots/%s.eps", m_distribution.c_str()));
-    m_canvas->Print(Form("plots/%s.pdf", m_distribution.c_str()));
+    m_canvas->Print(Form("%s/%s.gif", m_saveFolder.c_str(), m_distribution.c_str()));
+    m_canvas->Print(Form("%s/%s.eps", m_saveFolder.c_str(), m_distribution.c_str()));
+    m_canvas->Print(Form("%s/%s.pdf", m_saveFolder.c_str(), m_distribution.c_str()));
   }
 }

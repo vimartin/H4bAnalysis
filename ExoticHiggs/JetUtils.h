@@ -16,6 +16,8 @@ std::vector< std::vector<int> > findBHdecays(std::vector<GenParticle_p5>& partLi
 std::vector< std::vector<int> > findMuHdecays(std::vector<GenParticle_p5>& partList);
 bool isBhadron(int pdgId);
 bool isBjet(const fastjet::PseudoJet& jet);
+bool isVBFhadron(int pdgId, int status, int prodVtx);
+bool isVBFjet(const fastjet::PseudoJet& jet);
 int nBpartonInBjet(const fastjet::PseudoJet& jet);
 bool isBpartonJet(const fastjet::PseudoJet& jet, int parton);
 bool isJetMatchedToB(fastjet::PseudoJet jet, std::vector<GenParticle_p5>& partList);
@@ -29,6 +31,7 @@ class particleJet {
   TLorentzVector jet;
   fastjet::PseudoJet pseudoJet;
   bool isBjet;
+  bool isVBFjet;
   int nBpartons;
   
   // Subjet information

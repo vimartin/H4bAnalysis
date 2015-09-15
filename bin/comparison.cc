@@ -15,6 +15,7 @@
 #include "TPad.h"
 
 #include <algorithm>
+#include <boost/algorithm/string.hpp>
 #include <iostream> // needed for io
 #include <cstdio>   // needed for io
 #include <fstream>
@@ -45,6 +46,15 @@ int main(int argc, char** argv){
   double luminosity = reader.GetReal("General", "luminosity", 1.0);
   bool doLogScale = reader.GetBoolean("General", "doLogScale", false);
   bool savePlot = reader.GetBoolean("General", "savePlot", false);
+  bool normalizeUnity = reader.GetBoolean("General", "normalizeUnity", false);
+  int drawMode = reader.GetReal("General", "drawMode", 0);
+  bool drawLegend = reader.GetBoolean("General", "drawLegend", false);
+  std::string drawLatex = reader.Get("General", "drawLatex","");
+  std::string saveFolder = reader.Get("General", "saveFolder","");
+
+  boost::replace_all(drawLatex, "\"", "");
+  boost::replace_all(saveFolder, "\"", "");
+
 
   // Get distributions
   std::vector<std::string> distribution_vec = convertStringToVector(reader.Get("General", "distribution", "UNKOWN"));
@@ -80,38 +90,55 @@ int main(int argc, char** argv){
     std::cout<<sam<<std::endl;
     index_map[sam] = counter;
     address_map[sam] =   Form("results/%s", reader.Get(sam, "address", "UNKNOWN").c_str()); 
+    std::cout<<address_map[sam]<<std::endl;
     isSignal_map[sam] =  reader.GetBoolean(sam, "isSignal", false); //dummie
     scale_map[sam] =     reader.GetInteger(sam, "scale", 1.0);
     lineColor[sam] =     reader.GetInteger(sam, "lineColor", 0);
     fillColor[sam] =     reader.GetInteger(sam, "fillColor", 0);
     counter++;
 
-    if (sam=="WplusenuH_H125_a20a20_bbbb")
-      sampleTitles.push_back("WH, H#rightarrow aa, a#rightarrow b#bar{b}, m_{a} = 20 GeV");
-    else if (sam=="WplusenuH_H125_a60a60_bbbb")
-      sampleTitles.push_back("WH, H#rightarrow aa, a#rightarrow b#bar{b}, m_{a} = 60 GeV");
-    else if (sam=="ggF_H125_a20a20_bbmumu")
-      sampleTitles.push_back("ggF, H#rightarrow aa, a#rightarrow #mu^{+}#mu^{-}, m_{a} = 20 GeV");
-//      sampleTitles.push_back("ggF, H#rightarrow aa, a#rightarrow b#bar{b}b#bar{b}, m_{a} = 20 GeV");
-    else if (sam=="ggF_H125_a60a60_bbmumu")
-      sampleTitles.push_back("ggF, H#rightarrow aa, a#rightarrow #mu^{+}#mu^{-}, m_{a} = 60 GeV");
-//      sampleTitles.push_back("ggF, H#rightarrow aa, a#rightarrow b#bar{b}b#bar{b}, m_{a} = 60 GeV");
-    else if (sam=="ggF_H125_a01a01_mumumumu")
-      sampleTitles.push_back("ggF, H#rightarrow aa, a#rightarrow #mu^{+}#mu^{-}, m_{a} = 1 GeV");
-    else if (sam=="ggF_H125_a05a05_mumumumu")
-      sampleTitles.push_back("ggF, H#rightarrow aa, a#rightarrow #mu^{+}#mu^{-}, m_{a} = 5 GeV");
-    else if (sam=="ggF_H125_a10a10_mumumumu")
-      sampleTitles.push_back("ggF, H#rightarrow aa, a#rightarrow #mu^{+}#mu^{-}, m_{a} = 10 GeV");
-    else if (sam=="ggF_H125_a20a20_mumumumu")
-      sampleTitles.push_back("ggF, H#rightarrow aa, a#rightarrow #mu^{+}#mu^{-}, m_{a} = 20 GeV");
-    else if (sam=="ggF_H125_a30a30_mumumumu")
-      sampleTitles.push_back("ggF, H#rightarrow aa, a#rightarrow #mu^{+}#mu^{-}, m_{a} = 30 GeV");
-    else if (sam=="ggF_H125_a40a40_mumumumu")
-      sampleTitles.push_back("ggF, H#rightarrow aa, a#rightarrow #mu^{+}#mu^{-}, m_{a} = 40 GeV");
-    else if (sam=="ggF_H125_a50a50_mumumumu")
-      sampleTitles.push_back("ggF, H#rightarrow aa, a#rightarrow #mu^{+}#mu^{-}, m_{a} = 50 GeV");
-    else if (sam=="ggF_H125_a60a60_mumumumu")
-      sampleTitles.push_back("ggF, H#rightarrow aa, a#rightarrow #mu^{+}#mu^{-}, m_{a} = 60 GeV");
+    if (sam=="PowhegPy8EG_AZNLOCTEQ6L1_ggH_H125_a20a20_bbbb")
+      sampleTitles.push_back("ggF, h#rightarrow aa, a#rightarrow b#bar{b}, m_{a} = 20 GeV");
+    else if (sam=="PowhegPy8EG_AZNLOCTEQ6L1_ggH_H125_a30a30_bbbb")
+      sampleTitles.push_back("ggF, h#rightarrow aa, a#rightarrow b#bar{b}, m_{a} = 30 GeV");
+    else if (sam=="PowhegPy8EG_AZNLOCTEQ6L1_ggH_H125_a40a40_bbbb")
+      sampleTitles.push_back("ggF, h#rightarrow aa, a#rightarrow b#bar{b}, m_{a} = 40 GeV");
+    else if (sam=="PowhegPy8EG_AZNLOCTEQ6L1_ggH_H125_a50a50_bbbb")
+      sampleTitles.push_back("ggF, h#rightarrow aa, a#rightarrow b#bar{b}, m_{a} = 50 GeV");
+    else if (sam=="PowhegPy8EG_AZNLOCTEQ6L1_ggH_H125_a60a60_bbbb")
+      sampleTitles.push_back("ggF, h#rightarrow aa, a#rightarrow b#bar{b}, m_{a} = 60 GeV");
+    else if (sam=="PowhegPy8EG_AZNLOCTEQ6L1_VBF_H125_a20a20_bbbb")
+      sampleTitles.push_back("VBF, h#rightarrow aa, a#rightarrow b#bar{b}, m_{a} = 20 GeV");
+    else if (sam=="PowhegPy8EG_AZNLOCTEQ6L1_VBF_H125_a30a30_bbbb")
+      sampleTitles.push_back("VBF, h#rightarrow aa, a#rightarrow b#bar{b}, m_{a} = 30 GeV");
+    else if (sam=="PowhegPy8EG_AZNLOCTEQ6L1_VBF_H125_a40a40_bbbb")
+      sampleTitles.push_back("VBF, h#rightarrow aa, a#rightarrow b#bar{b}, m_{a} = 40 GeV");
+    else if (sam=="PowhegPy8EG_AZNLOCTEQ6L1_VBF_H125_a50a50_bbbb")
+      sampleTitles.push_back("VBF, h#rightarrow aa, a#rightarrow b#bar{b}, m_{a} = 50 GeV");
+    else if (sam=="PowhegPy8EG_AZNLOCTEQ6L1_VBF_H125_a60a60_bbbb")
+      sampleTitles.push_back("VBF, h#rightarrow aa, a#rightarrow b#bar{b}, m_{a} = 60 GeV");
+    else if (sam=="PowhegPy8EG_AZNLOCTEQ6L1_WplusmunuH_H125_a20a20_bbbb")
+      sampleTitles.push_back("W^{+}(#mu#nu)h, h#rightarrow aa, a#rightarrow b#bar{b}, m_{a} = 20 GeV");
+    else if (sam=="PowhegPy8EG_AZNLOCTEQ6L1_WplusmunuH_H125_a30a30_bbbb")
+      sampleTitles.push_back("W^{+}(#mu#nu)h, h#rightarrow aa, a#rightarrow b#bar{b}, m_{a} = 30 GeV");
+    else if (sam=="PowhegPy8EG_AZNLOCTEQ6L1_WplusmunuH_H125_a40a40_bbbb")
+      sampleTitles.push_back("W^{+}(#mu#nu)h, h#rightarrow aa, a#rightarrow b#bar{b}, m_{a} = 40 GeV");
+    else if (sam=="PowhegPy8EG_AZNLOCTEQ6L1_WplusmunuH_H125_a50a50_bbbb")
+      sampleTitles.push_back("W^{+}(#mu#nu)h, h#rightarrow aa, a#rightarrow b#bar{b}, m_{a} = 50 GeV");
+    else if (sam=="PowhegPy8EG_AZNLOCTEQ6L1_WplusmunuH_H125_a60a60_bbbb")
+      sampleTitles.push_back("W^{+}(#mu#nu)h, h#rightarrow aa, a#rightarrow b#bar{b}, m_{a} = 60 GeV");
+    else if (sam=="PowhegPy8EG_AZNLOCTEQ6L1_WminusmunuH_H125_a20a20_bbbb")
+      sampleTitles.push_back("W^{-}(#mu#nu)h, h#rightarrow aa, a#rightarrow b#bar{b}, m_{a} = 20 GeV");
+    else if (sam=="PowhegPy8EG_AZNLOCTEQ6L1_WminusmunuH_H125_a30a30_bbbb")
+      sampleTitles.push_back("W^{-}(#mu#nu)h, h#rightarrow aa, a#rightarrow b#bar{b}, m_{a} = 30 GeV");
+    else if (sam=="PowhegPy8EG_AZNLOCTEQ6L1_WminusmunuH_H125_a40a40_bbbb")
+      sampleTitles.push_back("W^{-}(#mu#nu)h, h#rightarrow aa, a#rightarrow b#bar{b}, m_{a} = 40 GeV");
+    else if (sam=="PowhegPy8EG_AZNLOCTEQ6L1_WminusmunuH_H125_a50a50_bbbb")
+      sampleTitles.push_back("W^{-}(#mu#nu)h, h#rightarrow aa, a#rightarrow b#bar{b}, m_{a} = 50 GeV");
+    else if (sam=="PowhegPy8EG_AZNLOCTEQ6L1_WminusmunuH_H125_a60a60_bbbb")
+      sampleTitles.push_back("W^{-}(#mu#nu)h, h#rightarrow aa, a#rightarrow b#bar{b}, m_{a} = 60 GeV");
+
+
     if (sam=="WplusenuH_H125_a20a20_bbbb_1")
       sampleTitles.push_back("Invariant mass 1 jet");
 //      sampleTitles.push_back("No cut");
@@ -136,20 +163,74 @@ int main(int argc, char** argv){
 
     if (distribution=="h_bbar_dR")
       histoXTitle="#DeltaR(b, #bar{b})";
+    else if (distribution=="h_aa_dR")
+      histoXTitle="#DeltaR(a, a)";
     else if (distribution=="h_mumu_dR")
       histoXTitle="#DeltaR(#mu^{+}, #mu^{-})";
+    else if (distribution=="h_aa_meanDeltaR"){
+      histoXTitle="m_{a} [GeV]";
+      histoYTitle="Mean #DeltaR(a, a)";}
+    else if (distribution=="h_bbar_meanDeltaR"){
+      histoXTitle="m_{a} [GeV]";
+      histoYTitle="Mean #DeltaR(b, #bar{b})";}
     else if (distribution=="h_bparton_pt")
-      histoXTitle="p_{T}(b)";
+      histoXTitle="p_{T}(b) [GeV]";
+    else if (distribution=="h_bparton_eta")
+      histoXTitle="#eta(b)";
+    else if (distribution=="h_hparton_pt")
+      histoXTitle="p_{T}(h) [GeV]";
+    else if (distribution=="h_hparton_eta")
+      histoXTitle="#eta(h)";
+    else if (distribution=="h_aparton_pt")
+      histoXTitle="p_{T}(a) [GeV]";
+    else if (distribution=="h_aparton_eta")
+      histoXTitle="#eta(a)";
+    else if (distribution=="h_wparton_pt")
+      histoXTitle="p_{T}(W) [GeV]";
+    else if (distribution=="h_wparton_eta")
+      histoXTitle="#eta(W)";
     else if (distribution=="h_muparton_pt")
-      histoXTitle="p_{T}(#mu)";
+      histoXTitle="p_{T}(#mu) [GeV]";
     else if (distribution=="h_muparton_m")
-      histoXTitle="m(#mu^{+}, #mu^{-})";
+      histoXTitle="m(#mu^{+}, #mu^{-}) [GeV]";
     else if (distribution=="h_aparton_pt")
       histoXTitle="p_{T}(a)";
     else if (distribution=="h_fatjet_trimmed_mass_verena-passLepton-passJets-passSubstr-passSubJet-passSubBJet")
-      histoXTitle="Invariant mass";
+      histoXTitle="Invariant mass [GeV]";
     else if (distribution=="h_lepton_preselected_pt")
-      histoXTitle="p_{T}(l from W)";
+      histoXTitle="p_{T}(l from W) [GeV]";
+    else if (distribution.find("h_lepton_pt") != std::string::npos)
+      histoXTitle="Lepton p_{T} [GeV]";
+    else if (distribution.find("nbjets") != std::string::npos)
+      histoXTitle="B-jet multiplicity";
+    else if (distribution.find("bjets_pt") != std::string::npos)
+      histoXTitle="B-jets p_{T} [GeV]";
+    else if (distribution.find("bjets_eta") != std::string::npos)
+      histoXTitle="B-jets #eta";
+    else if (distribution.find("nljets") != std::string::npos)
+      histoXTitle="Light jet multiplicity";
+    else if (distribution.find("ljets_pt") != std::string::npos)
+      histoXTitle="Light jets p_{T} [GeV]";
+    else if (distribution.find("ljets_eta") != std::string::npos)
+      histoXTitle="Light jets #eta";
+    else if (distribution.find("nvbfjets") != std::string::npos)
+      histoXTitle="VBF jet multiplicity";
+    else if (distribution.find("vbfjets_pt") != std::string::npos)
+      histoXTitle="VBF jets p_{T} [GeV]";
+    else if (distribution.find("vbfjets_eta") != std::string::npos)
+      histoXTitle="VBF jets #eta";
+    else if (distribution.find("njets") != std::string::npos)
+      histoXTitle="Jet multiplicity";
+    else if (distribution.find("jets_pt") != std::string::npos)
+      histoXTitle="Jets p_{T} [GeV]";
+    else if (distribution.find("jets_eta") != std::string::npos)
+      histoXTitle="Jets #eta";
+    else if (distribution.find("HMass") != std::string::npos)
+      histoXTitle="Reconstructed H mass [GeV]";
+    else if (distribution.find("AMass") != std::string::npos)
+      histoXTitle="Reconstructed a mass [GeV]";
+    else if (distribution.find("vbfjets_deltaEta") != std::string::npos)
+      histoXTitle="VBF jets |#Delta#eta|";
     else if (distribution=="h_dRmean_vs_mass"){
       histoXTitle="m_{a} [GeV]";
       histoYTitle="Mean #DeltaR(#mu^{+}, #mu^{-})";
@@ -164,7 +245,7 @@ int main(int argc, char** argv){
 
     std::cout<<"\nPlotting "<<distribution<<std::endl;
     comparisonClass *plot = new comparisonClass(distribution);
-    plot->setGlobalProperties(luminosity, doLogScale, savePlot);
+    plot->setGlobalProperties(luminosity, doLogScale, savePlot, normalizeUnity, drawMode, drawLegend, drawLatex, saveFolder);
     plot->setSampleNames(samplesName);
     plot->setSampleProperties(index_map, address_map, isSignal_map, scale_map, lineColor, fillColor);
     plot->setSamplesAndHistoTitles(histoXTitle, histoYTitle,  sampleTitles);

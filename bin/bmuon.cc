@@ -378,6 +378,9 @@ int main(int argc, char** argv){
       if (jet.isBjet) {
         selected_bjets.push_back(jet);
       }
+      else{
+        selected_ljets.push_back(jet);
+      }
     } 
 
 
@@ -386,7 +389,7 @@ int main(int argc, char** argv){
     // =========
 
     //--- All events
-    doAllPlots(0, "", h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec/nentries);
+    doAllPlots(0, "", h_1d, h_2d, selected_jets, selected_bjets, selected_ljets, selected_lepton, mc_weight*xsec/nentries);
 
     //=== PRESELECTION
     //--- Pass muon requirement
@@ -395,25 +398,25 @@ int main(int argc, char** argv){
     if (pass.find(std::string("passMuon")) != std::string::npos){
       plot1D_cutflow("cutflow", 1, h_1d, "Cut flow", cutflow_bin_title);
     }
-    doAllPlots(2, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec/nentries);
+    doAllPlots(2, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_ljets, selected_lepton, mc_weight*xsec/nentries);
 
     selected_lepton.size()>=3 ? pass=Form("%s-passMuon3", pass.c_str()) : pass=Form("%s-failMuon3", pass.c_str());
     if (pass.find(std::string("passMuon0-passMuon3")) != std::string::npos){
       plot1D_cutflow("cutflow", 2, h_1d, "Cut flow", cutflow_bin_title);
     }
-    doAllPlots(2, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec/nentries);
+    doAllPlots(2, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_ljets, selected_lepton, mc_weight*xsec/nentries);
 
     !failMuPt ? pass=Form("%s-passMuonPt", pass.c_str()) : pass=Form("%s-failMuonPt", pass.c_str());
     if (pass.find(std::string("passMuon0-passMuon3-passMuonPt")) != std::string::npos){
       plot1D_cutflow("cutflow", 3, h_1d, "Cut flow", cutflow_bin_title);
     }
-    doAllPlots(2, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec/nentries);
+    doAllPlots(2, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_ljets, selected_lepton, mc_weight*xsec/nentries);
 
     !failMuEta ? pass=Form("%s-passMuonEta", pass.c_str()) : pass=Form("%s-failMuonEta", pass.c_str());
     if (pass.find(std::string("passMuon0-passMuon3-passMuonPt-passMuonEta")) != std::string::npos){
       plot1D_cutflow("cutflow", 4, h_1d, "Cut flow", cutflow_bin_title);
     }
-    doAllPlots(2, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec/nentries);
+    doAllPlots(2, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_ljets, selected_lepton, mc_weight*xsec/nentries);
 
 
 //
@@ -425,13 +428,13 @@ int main(int argc, char** argv){
 //    if (pass.find(std::string("passLepton-pass3Jets")) != std::string::npos){
 //      plot1D_cutflow("cutflow", 5, h_1d, "Cut flow", cutflow_bin_title);
 //    }
-//    doAllPlots(0, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec/nentries);
+//    doAllPlots(0, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_ljets, selected_lepton, mc_weight*xsec/nentries);
 //
 //    selected_jets.size()>=4  ? pass=Form("%s-pass4Jets", pass.c_str()) : pass=Form("%s-fail4Jets", pass.c_str());
 //    if (pass.find(std::string("passLepton-fail3Jets-pass4Jets")) != std::string::npos){
 //      plot1D_cutflow("cutflow", 6, h_1d, "Cut flow", cutflow_bin_title);
 //    }
-//    doAllPlots(0, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec/nentries);
+//    doAllPlots(0, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_ljets, selected_lepton, mc_weight*xsec/nentries);
 //
 //    //--- B-jets requirements (signal regions)
 //
@@ -442,13 +445,13 @@ int main(int argc, char** argv){
 //    if (pass.find(std::string("passLepton-fail3Jets-pass4Jets-pass3BJets")) != std::string::npos){
 //      plot1D_cutflow("cutflow", 8, h_1d, "Cut flow", cutflow_bin_title); //4j-3b
 //    }
-//    doAllPlots(0, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec/nentries);
+//    doAllPlots(0, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_ljets, selected_lepton, mc_weight*xsec/nentries);
 //
 //    selected_bjets.size()>=4  ? pass=Form("%s-pass4BJets", pass.c_str()) : pass=Form("%s-fail4BJets", pass.c_str());
 //    if (pass.find(std::string("passLepton-fail3Jets-pass4Jets-fail3BJets-pass4BJets")) != std::string::npos){
 //      plot1D_cutflow("cutflow", 9, h_1d, "Cut flow", cutflow_bin_title); //4j-4b
 //    }
-//    doAllPlots(0, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_lepton, mc_weight*xsec/nentries);
+//    doAllPlots(0, pass, h_1d, h_2d, selected_jets, selected_bjets, selected_ljets, selected_lepton, mc_weight*xsec/nentries);
 
   } // end loop entries
 

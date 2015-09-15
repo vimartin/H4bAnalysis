@@ -67,6 +67,29 @@ bool isJetMatchedToB(fastjet::PseudoJet jet, std::vector<GenParticle_p5>& partLi
   return false;
 }
 
+bool isVBFhadron(int pdgId, int status, int prodVtx)
+{
+
+  if (fabs(prodVtx) > 3) return false;
+  if (status != 23) return false;
+
+  int pdg=abs(pdgId);
+
+  if(pdg>=1 && pdg<=4){
+    return true;
+  } else return false;
+}
+
+bool isVBFjet(const fastjet::PseudoJet& jet)
+{
+
+  vector<fastjet::PseudoJet> constituents = jet.constituents();
+  for (auto constituent : constituents) 
+    if (constituent.user_index() == -100) return true;
+  return false;
+  
+}
+
 int number_fatjets(std::vector<particleJet> selected_jets_fat, std::string type, float pt_thres, float eta_thres){
   int nfatjets = 0;
   for (auto jet : selected_jets_fat){
@@ -192,12 +215,11 @@ double findMinDeltaR(std::vector<particleJet>){
 }
   
 double findResolvedRecoHmass(std::vector<particleJet> selected_bjets){
+  //--- Consider all the b-jets.
   double recoHmass = -9999;
   TLorentzVector H_tlv;
-  if (selected_bjets.size()>=3){
-    for (auto bjet : selected_bjets){
-     H_tlv += bjet.jet; 
-    }
+  for (auto bjet : selected_bjets){
+    H_tlv += bjet.jet; 
   }
   recoHmass = H_tlv.M()/1000.;
   return recoHmass;
